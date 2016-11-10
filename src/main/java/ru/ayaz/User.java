@@ -1,57 +1,65 @@
 package ru.ayaz;
 
 import java.io.PrintWriter;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class User {
-    private String nickName;
-    private long id;
-    private PrintWriter writer;
+    private String nickname;
+    private Set<String> ignoredUsersSet;
 
-    public void setNickName(String nickName) {
-        validateNickName(nickName);
-        this.nickName = nickName;
+
+    public User(){
+        ignoredUsersSet = new TreeSet<String>();
     }
 
-    private void validateNickName(String nickName) {
-        if (nickName == null) {
+    public void setNickname(String nickname) {
+        validateNickName(nickname);
+        this.nickname = nickname;
+    }
+
+    private void validateNickName(String nickname) {
+        if (nickname == null) {
             throw new IllegalArgumentException();
         }
 
-        if (isSpacesOnly(nickName)) {
+        if (isSpacesOnly(nickname)) {
             throw new IllegalArgumentException();
         }
 
-        if (isFirstCharDigit(nickName)) {
+        if (isFirstCharDigit(nickname)) {
             throw new IllegalArgumentException();
         }
     }
 
-    private boolean isFirstCharDigit(String nickName) {
-        return Character.isDigit(nickName.charAt(0));
+    private boolean isFirstCharDigit(String nickname) {
+        return Character.isDigit(nickname.charAt(0));
     }
 
-    private boolean isSpacesOnly(String nickName) {
-        return nickName.replaceAll("\\s+", "").equals("");
+    private boolean isSpacesOnly(String nickname) {
+        return nickname.replaceAll("\\s+", "").equals("");
     }
 
 
-    public String getNickName() {
-        return nickName;
+    public String getNickname() {
+        return nickname;
     }
 
-    public void setWriter(PrintWriter writer) {
-        this.writer = writer;
+    public boolean hasInIgnoredSet(String nickname){
+        return ignoredUsersSet.contains(nickname);
     }
 
-    public PrintWriter getWriter() {
-        return this.writer;
+    public boolean ignoreUser(String blackNickname) {
+
+        if(ItsMe(blackNickname)){
+            return false;
+        }else{
+            return ignoredUsersSet.add(blackNickname);
+        }
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public boolean ItsMe(String nickname){
+        return this.nickname.equals(nickname);
     }
 
-    public long getId() {
-        return id;
-    }
 }

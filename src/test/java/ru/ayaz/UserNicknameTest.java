@@ -7,10 +7,11 @@ import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertEquals;
 
-public class UserTest {
+public class UserNicknameTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+
     private User user;
 
     @Before
@@ -19,33 +20,34 @@ public class UserTest {
     }
 
     @Test
-    public void whenNullThenIllegalArgException() throws Exception {
+    public void illegalArgExceptionWhenNull() throws Exception {
         exception.expect(IllegalArgumentException.class);
-        user.setNickName(null);
+        user.setNickname(null);
     }
 
     @Test
-    public void whenEmptyThenIllegalArgException() throws Exception {
+    public void illegalArgExceptionWhenEmpty() throws Exception {
         exception.expect(IllegalArgumentException.class);
-        user.setNickName("");
+        user.setNickname("");
     }
 
     @Test
-    public void whenSpacesThenIllegalArgException() throws Exception {
+    public void illegalArgExceptionWhenSpaces() throws Exception {
         exception.expect(IllegalArgumentException.class);
-        user.setNickName("   ");
+        user.setNickname("   ");
     }
 
     @Test
-    public void whenFirstDigitThenIllegalArgException() throws Exception {
+    public void illegalArgExceptionWhenFirstDigit() throws Exception {
         exception.expect(IllegalArgumentException.class);
-        user.setNickName("4get");
+        user.setNickname("4get");
     }
 
     @Test
-    public void whenNormalNameThenSetName() {
-        user.setNickName("geeseWatcher123");
-        assertEquals("geeseWatcher123", user.getNickName());
+    public void setNameWhenNormalString() {
+        user.setNickname("geeseWatcher123");
+        assertEquals("geeseWatcher123", user.getNickname());
     }
+
 
 }

@@ -13,8 +13,8 @@ import java.util.TreeMap;
 public class ChatServer {
 
     ServerSocket serverSocket;
-    private Map<Long, User> users;
-    long newUserNextID = 1;
+    private Map<String, User> usersMap;
+    private Map<String, PrintWriter> outputWriterMap;
 
     public ChatServer() {
         try {
@@ -28,6 +28,7 @@ public class ChatServer {
     public class UserHandler implements Runnable {
 
         private User user;
+        private PrintWriter writer;
         private Socket socket;
         private BufferedReader reader;
 
@@ -37,14 +38,10 @@ public class ChatServer {
                 socket = clientSocket;
                 InputStreamReader isReader = new InputStreamReader(socket.getInputStream());
                 reader = new BufferedReader(isReader);
-                PrintWriter writer = new PrintWriter(socket.getOutputStream());
+                writer = new PrintWriter(socket.getOutputStream());
 
                 user = new User();
-                user.setWriter(writer);
-                user.setId(newUserNextID);
-                users.put(newUserNextID, user);
 
-                newUserNextID++;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -59,14 +56,14 @@ public class ChatServer {
 
             try {
 
-                user.setNickName(listenForMessage());
-                sendMessageToEveryoneExcept(user.getNickName() + " connected to chat", user.getId());
+                user.setNickname(listenForMessage());
+                usersMap.put(user.getNickname(), user);
+                outputWriterMap.put(user.getNickname(), writer);
+                sendMessageToEveryone(user.getNickname() + " connected to chat", user.getNickname());
                 while ((message = listenForMessage()) != null) {
-                    sendMessageToEveryoneExcept(user.getNickName() + ": " + message, user.getId());
+                    sendMessageToEveryone(user.getNickname() + ": " + message, user.getNickname());
                 }
-                sendMessageToEveryoneExcept(user.getNickName() + " left chat", user.getId());
-
-                user.getWriter().close();
+                sendMessageToEveryone(user.getNickname() + " left chat", user.getNickname());
 
                 Thread.currentThread().interrupt();
 
@@ -79,7 +76,6 @@ public class ChatServer {
 
 
         private void welcomeNewUser() {
-            PrintWriter writer = user.getWriter();
             writer.println("Welcome to Chat");
             writer.println("Please enter your name:\n");
             writer.flush();
@@ -94,19 +90,19 @@ public class ChatServer {
     }
 
 
-    private void sendMessageToEveryoneExcept(String message, Long exceptId) {
-
-        PrintWriter pw;
+    private void sendMessageToEveryone(String message, String sender) {
 
         System.out.println(message);
 
-        for (Map.Entry<Long, User> entry : users.entrySet()) {
-            Long key = entry.getKey();
+        for (Map.Entry<String, User> entry : usersMap.entrySet()) {
+            String key = entry.getKey();
             User value = entry.getValue();
-            if ((value.getId()) != exceptId) {
-                pw = value.getWriter();
-                pw.println(message);
-                pw.flush();
+            if(!key.equals(sender)) {
+                if (!value.hasInIgnoredSet(sender)) {
+                    PrintWriter pw = outputWriterMap.get(key);
+                    pw.println(message);
+                    pw.flush();
+                }
             }
         }
 
@@ -114,7 +110,8 @@ public class ChatServer {
 
 
     public void startChat() {
-        users = new TreeMap<Long, User>();
+        usersMap = new TreeMap<String, User>();
+        outputWriterMap = new TreeMap<String, PrintWriter>();
 
         try {
             while (true) {
