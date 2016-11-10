@@ -1,6 +1,5 @@
 package ru.ayaz;
 
-import java.io.PrintWriter;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -9,7 +8,7 @@ public class User {
     private Set<String> ignoredUsersSet;
 
 
-    public User(){
+    public User() {
         ignoredUsersSet = new TreeSet<String>();
     }
 
@@ -45,20 +44,20 @@ public class User {
         return nickname;
     }
 
-    public boolean hasInIgnoredSet(String nickname){
+    public boolean hasInIgnoredSet(String nickname) {
         return ignoredUsersSet.contains(nickname);
     }
 
     public boolean ignoreUser(String blackNickname) {
 
-        if(ItsMe(blackNickname)){
+        if (ItsMe(blackNickname)) {
             return false;
-        }else{
+        } else {
             return ignoredUsersSet.add(blackNickname);
         }
     }
 
-    public boolean ItsMe(String nickname){
+    public boolean ItsMe(String nickname) {
         return this.nickname.equals(nickname);
     }
 

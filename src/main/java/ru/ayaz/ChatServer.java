@@ -59,10 +59,13 @@ public class ChatServer {
                 user.setNickname(listenForMessage());
                 usersMap.put(user.getNickname(), user);
                 outputWriterMap.put(user.getNickname(), writer);
+
                 sendMessageToEveryone(user.getNickname() + " connected to chat", user.getNickname());
+
                 while ((message = listenForMessage()) != null) {
                     sendMessageToEveryone(user.getNickname() + ": " + message, user.getNickname());
                 }
+
                 sendMessageToEveryone(user.getNickname() + " left chat", user.getNickname());
 
                 Thread.currentThread().interrupt();
