@@ -9,7 +9,7 @@ public class User {
 
 
     public User() {
-        ignoredUsersSet = new TreeSet<String>();
+        this.ignoredUsersSet=new TreeSet<String>();
     }
 
     public void setNickname(String nickname) {
@@ -44,20 +44,19 @@ public class User {
         return nickname;
     }
 
-    public boolean hasInIgnoredSet(String nickname) {
+    public boolean isInIgnoredSet(String nickname) {
         return ignoredUsersSet.contains(nickname);
     }
 
     public boolean ignoreUser(String blackNickname) {
-
-        if (ItsMe(blackNickname)) {
+        if (itsMe(blackNickname)) {
             return false;
         } else {
             return ignoredUsersSet.add(blackNickname);
         }
     }
 
-    public boolean ItsMe(String nickname) {
+    public boolean itsMe(String nickname) {
         return this.nickname.equals(nickname);
     }
 

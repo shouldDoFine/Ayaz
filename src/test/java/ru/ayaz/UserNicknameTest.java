@@ -20,31 +20,31 @@ public class UserNicknameTest {
     }
 
     @Test
-    public void illegalArgExceptionWhenNull() throws Exception {
+    public void shouldThrowIllegalArgExceptionWhenNull() throws Exception {
         exception.expect(IllegalArgumentException.class);
         user.setNickname(null);
     }
 
     @Test
-    public void illegalArgExceptionWhenEmpty() throws Exception {
+    public void shouldThrowIllegalArgExceptionWhenEmpty() throws Exception {
         exception.expect(IllegalArgumentException.class);
         user.setNickname("");
     }
 
     @Test
-    public void illegalArgExceptionWhenSpaces() throws Exception {
+    public void shouldThrowIllegalArgExceptionWhenSpaces() throws Exception {
         exception.expect(IllegalArgumentException.class);
         user.setNickname("   ");
     }
 
     @Test
-    public void illegalArgExceptionWhenFirstDigit() throws Exception {
+    public void shouldThrowIllegalArgExceptionWhenFirstDigit() throws Exception {
         exception.expect(IllegalArgumentException.class);
         user.setNickname("4get");
     }
 
     @Test
-    public void setNameWhenNormalString() {
+    public void shouldNotThrowIllegalArgExceptionWhenNormalString() {
         user.setNickname("geeseWatcher123");
         assertEquals("geeseWatcher123", user.getNickname());
     }

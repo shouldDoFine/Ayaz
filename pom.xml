@@ -62,24 +62,22 @@
                 </configuration>
             </plugin>
 
-            <!--
             <plugin>
+                <!-- Executing JAR-->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.2.1</version>
                 <executions>
                     <execution>
-                        <phase>install</phase>
                         <goals>
                             <goal>java</goal>
                         </goals>
-                        <configuration>
-                            <mainClass>ru.ayaz.ChatServer</mainClass>
-                        </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <mainClass>ru.ayaz.ChatServer</mainClass>
+                </configuration>
             </plugin>
-            -->
 
         </plugins>
     </build>

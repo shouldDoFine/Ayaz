@@ -12,16 +12,58 @@ import java.util.TreeMap;
 
 public class ChatServer {
 
-    ServerSocket serverSocket;
+    private ServerSocket serverSocket;
     private Map<String, User> usersMap;
     private Map<String, PrintWriter> outputWriterMap;
 
+
     public ChatServer() {
         try {
-            serverSocket = new ServerSocket(4400);
+            this.serverSocket = new ServerSocket(4400);
+            this.usersMap = new TreeMap<String, User>();
+            this.outputWriterMap = new TreeMap<String, PrintWriter>();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+
+    private void sendMessageToEveryone(String message, String sender) {
+
+        System.out.println(message);
+
+        for (Map.Entry<String, User> entry : usersMap.entrySet()) {
+            String key = entry.getKey();
+            User value = entry.getValue();
+            if(!key.equals(sender)) {
+                if (!value.isInIgnoredSet(sender)) {
+                    PrintWriter pw = outputWriterMap.get(key);
+                    pw.println(message);
+                    pw.flush();
+                }
+            }
+        }
+
+    }
+
+
+    public void startChat() {
+
+        try {
+            while (true) {
+                Socket socket = serverSocket.accept();
+                Thread t = new Thread(new UserHandler(socket));
+                t.start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void main(String[] args) {
+        ChatServer chat = new ChatServer();
+        chat.startChat();
     }
 
 
@@ -88,49 +130,6 @@ public class ChatServer {
         private String listenForMessage() throws IOException {
             return reader.readLine();
         }
-
-
-    }
-
-
-    private void sendMessageToEveryone(String message, String sender) {
-
-        System.out.println(message);
-
-        for (Map.Entry<String, User> entry : usersMap.entrySet()) {
-            String key = entry.getKey();
-            User value = entry.getValue();
-            if(!key.equals(sender)) {
-                if (!value.hasInIgnoredSet(sender)) {
-                    PrintWriter pw = outputWriterMap.get(key);
-                    pw.println(message);
-                    pw.flush();
-                }
-            }
-        }
-
-    }
-
-
-    public void startChat() {
-        usersMap = new TreeMap<String, User>();
-        outputWriterMap = new TreeMap<String, PrintWriter>();
-
-        try {
-            while (true) {
-                Socket socket = serverSocket.accept();
-                Thread t = new Thread(new UserHandler(socket));
-                t.start();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public static void main(String[] args) {
-        ChatServer chat = new ChatServer();
-        chat.startChat();
 
     }
 

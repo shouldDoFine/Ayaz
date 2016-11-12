@@ -3,26 +3,22 @@ package ru.ayaz;
 public class MessageProcessor {
 
     public boolean isCommand(String message) {
-        message = message.trim();
-        return message.startsWith("#");
+        return message.trim().startsWith("#");
     }
 
     public String getCommand(String message) {
-        message = message.trim();
-        if (message.contains(" ")) {
-            return message.substring(0, message.indexOf(" "));
+        String trimmedMessage = message.trim();
+        if (trimmedMessage.contains(" ")) {
+            return trimmedMessage.substring(0, trimmedMessage.indexOf(" "));
         } else {
-            return message;
+            return trimmedMessage;
         }
     }
 
     public String getFirstArgument(String message) {
-        message = message.trim();
-        message = message.substring(message.indexOf(" ") + 1);
-        if (message.contains(" ")) {
-            message = message.substring(0, message.indexOf(" "));
-        }
-        return message;
+        String[] arguments = message.trim().split("\\s+");
+        return arguments[1];
     }
+
 
 }

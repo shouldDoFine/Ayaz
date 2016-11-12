@@ -5,7 +5,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class UserIgnoredSetTest {
 
@@ -21,24 +23,24 @@ public class UserIgnoredSetTest {
     }
 
     @Test
-    public void notNullPointerExceptionWhenInitialized() {
-        user.hasInIgnoredSet("someone");
+    public void shouldNotThrowNullPointerExceptionWhenInitialized() {
+        user.isInIgnoredSet("someone");
     }
 
     @Test
-    public void addUserToIgnoredSetWhenNormal() {
-        assertEquals(true, user.ignoreUser("badGuy333"));
+    public void shouldAddUserToIgnoredSetWhenNormal() {
+        assertTrue(user.ignoreUser("badGuy333"));
     }
 
     @Test
-    public void dontAddUserToIgnoredSetWhenContains() {
+    public void shouldNotAddUserToIgnoredSetWhenContains() {
         user.ignoreUser("spammer423");
-        assertEquals(false, user.ignoreUser("spammer423"));
+        assertFalse(user.ignoreUser("spammer423"));
     }
 
     @Test
-    public void dontAddUserToIgnoredSetWhenYourself() {
-        assertEquals(false, user.ignoreUser("Ayaz"));
+    public void shouldNotAddUserToIgnoredSetWhenYourself() {
+        assertFalse(user.ignoreUser("Ayaz"));
     }
 
 }
