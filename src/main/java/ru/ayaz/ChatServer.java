@@ -70,19 +70,18 @@ public class ChatServer {
     public class UserHandler implements Runnable {
 
         private User user;
+        private MessageProcessor processor;
         private PrintWriter writer;
-        private Socket socket;
         private BufferedReader reader;
 
 
-        public UserHandler(Socket clientSocket) {
+        public UserHandler(Socket socket) {
             try {
-                socket = clientSocket;
                 InputStreamReader isReader = new InputStreamReader(socket.getInputStream());
-                reader = new BufferedReader(isReader);
-                writer = new PrintWriter(socket.getOutputStream());
-
-                user = new User();
+                this.reader = new BufferedReader(isReader);
+                this.writer = new PrintWriter(socket.getOutputStream());
+                this.user = new User();
+                this.processor = new MessageProcessor();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -93,6 +92,7 @@ public class ChatServer {
         public void run() {
 
             String message;
+            String sender;
 
             welcomeNewUser();
 
@@ -102,20 +102,35 @@ public class ChatServer {
                 usersMap.put(user.getNickname(), user);
                 outputWriterMap.put(user.getNickname(), writer);
 
-                sendMessageToEveryone(user.getNickname() + " connected to chat", user.getNickname());
+                sender = user.getNickname();
+
+                sendMessageToEveryone(sender + " connected to chat", sender);
 
                 while ((message = listenForMessage()) != null) {
-                    sendMessageToEveryone(user.getNickname() + ": " + message, user.getNickname());
+                    if(!processor.isCommand(message)){
+                        sendMessageToEveryone(sender + ": " + message, sender);
+                    }else{
+                        implementCommand(message, sender);
+                    }
                 }
 
-                sendMessageToEveryone(user.getNickname() + " left chat", user.getNickname());
+                sendMessageToEveryone(sender + " left chat", sender);
 
                 Thread.currentThread().interrupt();
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
+            }
+            catch (IllegalArgumentException e) {
+                writer.println("Bad nickname. No digit first, spaces allowed.");
+                writer.flush();
+                writer.close();
+                try {
+                    reader.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            catch (IOException e) {
+                sendMessageToEveryone(user.getNickname() + " left chat", user.getNickname());
             }
         }
 
@@ -129,6 +144,22 @@ public class ChatServer {
 
         private String listenForMessage() throws IOException {
             return reader.readLine();
+        }
+
+        private void implementCommand(String message, String sender) throws IOException{
+            switch (processor.getCommand(message)){
+                case "#quit":
+                    writer.close();
+                    reader.close();
+                    break;
+                case "#ignore":
+                    user.ignoreUser(processor.getFirstArgument(message));
+                    break;
+                default:
+                    writer.println("Unknown command");
+                    writer.flush();
+                    break;
+            }
         }
 
     }
