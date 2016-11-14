@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class UserIgnoredSetTest {
@@ -17,7 +16,7 @@ public class UserIgnoredSetTest {
     private User user;
 
     @Before
-    public final void before() {
+    public final void before() throws invalidNicknameException {
         user = new User();
         user.setNickname("Ayaz");
     }

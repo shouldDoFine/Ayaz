@@ -28,26 +28,7 @@ public class ChatServer {
     }
 
 
-    private void sendMessageToEveryone(String message, String sender) {
-
-        System.out.println(message);
-
-        for (Map.Entry<String, User> entry : usersMap.entrySet()) {
-            String key = entry.getKey();
-            User value = entry.getValue();
-            if(!key.equals(sender)) {
-                if (!value.isInIgnoredSet(sender)) {
-                    PrintWriter pw = outputWriterMap.get(key);
-                    pw.println(message);
-                    pw.flush();
-                }
-            }
-        }
-
-    }
-
-
-    public void startChat() {
+    public void start() {
 
         try {
             while (true) {
@@ -61,9 +42,22 @@ public class ChatServer {
     }
 
 
-    public static void main(String[] args) {
-        ChatServer chat = new ChatServer();
-        chat.startChat();
+    private void sendMessageToEveryone(String message, String sender) {
+
+        System.out.println(message);
+
+        for (Map.Entry<String, User> entry : usersMap.entrySet()) {
+            String nickname = entry.getKey();
+            User user = entry.getValue();
+            if (!nickname.equals(sender)) {
+                if (!user.isInIgnoredSet(sender)) {
+                    PrintWriter pw = outputWriterMap.get(nickname);
+                    pw.println(message);
+                    pw.flush();
+                }
+            }
+        }
+
     }
 
 
@@ -77,13 +71,12 @@ public class ChatServer {
 
         public UserHandler(Socket socket) {
             try {
-                InputStreamReader isReader = new InputStreamReader(socket.getInputStream());
-                this.reader = new BufferedReader(isReader);
+                this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 this.writer = new PrintWriter(socket.getOutputStream());
                 this.user = new User();
                 this.processor = new MessageProcessor();
 
-            } catch (Exception e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -107,10 +100,10 @@ public class ChatServer {
                 sendMessageToEveryone(sender + " connected to chat", sender);
 
                 while ((message = listenForMessage()) != null) {
-                    if(!processor.isCommand(message)){
+                    if (!processor.isCommand(message)) {
                         sendMessageToEveryone(sender + ": " + message, sender);
-                    }else{
-                        implementCommand(message, sender);
+                    } else {
+                        executeCommand(message);
                     }
                 }
 
@@ -118,9 +111,9 @@ public class ChatServer {
 
                 Thread.currentThread().interrupt();
 
-            }
-            catch (IllegalArgumentException e) {
-                writer.println("Bad nickname. No digit first, spaces allowed.");
+            } catch (invalidNicknameException e) {
+                writer.println("Bad nickname " + e.getInvalidNickname() + ".");
+                writer.println("Digit first and spaces are not allowed.");
                 writer.flush();
                 writer.close();
                 try {
@@ -128,8 +121,7 @@ public class ChatServer {
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 sendMessageToEveryone(user.getNickname() + " left chat", user.getNickname());
             }
         }
@@ -146,8 +138,9 @@ public class ChatServer {
             return reader.readLine();
         }
 
-        private void implementCommand(String message, String sender) throws IOException{
-            switch (processor.getCommand(message)){
+
+        private void executeCommand(String message) throws IOException {
+            switch (processor.getCommand(message)) {
                 case "#quit":
                     writer.close();
                     reader.close();

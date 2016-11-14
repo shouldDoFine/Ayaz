@@ -13,35 +13,36 @@ public class MessageProcessorTest {
         processor = new MessageProcessor();
     }
 
+
     @Test
-    public void falseWhenSharpNotFirst() {
+    public void shouldNotBeTreatedAsCommandWhenCharacterComesFirst() {
         assertEquals(false, processor.isCommand("d#quit"));
     }
 
     @Test
-    public void trueWhenSharpFirstAfterSpaces() {
+    public void shouldBeTreatedAsCommandWhenSharpComesFirstAfterSpaces() {
         assertEquals(true, processor.isCommand("    #quit"));
     }
 
     @Test
-    public void shouldGetCommandWhenNormalStartSpaces() {
+    public void shouldGetCommandWhenSharpComesFirstStartSpaces() {
         assertEquals("#quit", processor.getCommand("    #quit"));
     }
 
     @Test
-    public void shouldGetCommandWhenNormalTwoWords() {
+    public void shouldGetCommandWhenStringHasTwoWords() {
         assertEquals("#ignore", processor.getCommand("#ignore spammer"));
     }
 
 
     @Test
-    public void shouldGetArgumentWhenOneArgument() {
+    public void shouldGetArgumentWhenStringHasOneArgument() {
         String result = processor.getFirstArgument("  #ignore spammer");
         assertEquals("spammer", result);
     }
 
     @Test
-    public void shouldGetFirstArgumentWhenTwoArguments() {
+    public void shouldGetFirstArgumentWhenStringHasTwoArguments() {
         String result = processor.getFirstArgument("  #ignore spammer badGuy123");
         assertEquals("spammer", result);
     }

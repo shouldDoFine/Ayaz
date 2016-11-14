@@ -12,22 +12,22 @@ public class User {
         this.ignoredUsersSet = new TreeSet<String>();
     }
 
-    public void setNickname(String nickname) {
+    public void setNickname(String nickname) throws invalidNicknameException {
         validateNickName(nickname);
         this.nickname = nickname;
     }
 
-    private void validateNickName(String nickname) {
+    private void validateNickName(String nickname) throws invalidNicknameException {
         if (nickname == null) {
-            throw new IllegalArgumentException();
+            throw new invalidNicknameException(nickname);
         }
 
         if (isSpacesOnly(nickname)) {
-            throw new IllegalArgumentException();
+            throw new invalidNicknameException(nickname);
         }
 
         if (isFirstCharDigit(nickname)) {
-            throw new IllegalArgumentException();
+            throw new invalidNicknameException(nickname);
         }
     }
 
