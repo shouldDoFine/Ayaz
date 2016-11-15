@@ -29,7 +29,6 @@ public class ChatServer {
 
 
     public void start() {
-
         try {
             while (true) {
                 Socket socket = serverSocket.accept();
@@ -49,13 +48,17 @@ public class ChatServer {
         for (Map.Entry<String, User> entry : usersMap.entrySet()) {
             String nickname = entry.getKey();
             User user = entry.getValue();
-            if (!nickname.equals(sender)) {
-                if (!user.isIgnored(sender)) {
-                    PrintWriter pw = outputWriterMap.get(nickname);
-                    pw.println(message);
-                    pw.flush();
-                }
+
+            if (user.isItMe(sender)) {
+                continue;
             }
+
+            if (!user.isIgnored(sender)) {
+                PrintWriter pw = outputWriterMap.get(nickname);
+                pw.println(message);
+                pw.flush();
+            }
+
         }
 
     }
@@ -86,17 +89,17 @@ public class ChatServer {
             String message;
             String sender;
 
-            welcomeNewUser();
+            welcomeUser();
 
             try {
 
                 user.setNickname(listenForMessage());
-                usersMap.put(user.getNickname(), user);
-                outputWriterMap.put(user.getNickname(), writer);
+                addUser();
+                addWriter();
 
                 sender = user.getNickname();
 
-                sendMessageToEveryone(sender + " connected to chat", sender);
+                sayEveryoneUserConnected(sender);
 
                 while ((message = listenForMessage()) != null) {
                     if (!processor.isCommand(message)) {
@@ -106,7 +109,7 @@ public class ChatServer {
                     }
                 }
 
-                sendMessageToEveryone(sender + " left chat", sender);
+                sayEveryoneUserLeft(sender);
 
                 Thread.currentThread().interrupt();
 
@@ -120,15 +123,25 @@ public class ChatServer {
                     e1.printStackTrace();
                 }
             } catch (IOException e) {
-                sendMessageToEveryone(user.getNickname() + " left chat", user.getNickname());
+                sayEveryoneUserLeft(user.getNickname());
             }
         }
 
 
-        private void welcomeNewUser() {
+        private void welcomeUser() {
             writer.println("Welcome to Chat");
             writer.println("Please enter your name:\n");
             writer.flush();
+        }
+
+
+        private void addUser() {
+            usersMap.put(user.getNickname(), user);
+        }
+
+
+        private void addWriter() {
+            outputWriterMap.put(user.getNickname(), writer);
         }
 
 
@@ -136,6 +149,14 @@ public class ChatServer {
             return reader.readLine();
         }
 
+
+        private void sayEveryoneUserConnected(String connectedUser) {
+            sendMessageToEveryone(connectedUser + " connected to chat", connectedUser);
+        }
+
+        private void sayEveryoneUserLeft(String leftUser) {
+            sendMessageToEveryone(leftUser + " left chat", leftUser);
+        }
 
         private void executeCommand(String message) throws IOException {
             switch (processor.getCommand(message)) {
