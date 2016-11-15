@@ -33,13 +33,13 @@ public class UserIgnoreTest {
     @Test
     public void shouldThrowWhenAlreadyContains() throws InvalidUserCommandException {
         user.ignoreUser("spammer423");
-        exception.expect(InvalidNicknameException.class);
+        exception.expect(InvalidUserCommandException.class);
         user.ignoreUser("spammer423");
     }
 
     @Test
     public void shouldThrowWhenIgnoreYourself() throws InvalidUserCommandException {
-        exception.expect(InvalidNicknameException.class);
+        exception.expect(InvalidUserCommandException.class);
         user.ignoreUser("Ayaz");
     }
 
