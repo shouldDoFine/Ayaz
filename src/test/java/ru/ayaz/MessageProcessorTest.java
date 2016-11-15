@@ -20,12 +20,12 @@ public class MessageProcessorTest {
     }
 
     @Test
-    public void shouldBeTreatedAsCommandWhenSharpComesFirstAfterSpaces() {
+    public void shouldBeTreatedAsCommandWhenSharpComesRightAfterSpaces() {
         assertEquals(true, processor.isCommand("    #quit"));
     }
 
     @Test
-    public void shouldGetCommandWhenSharpComesFirstStartSpaces() {
+    public void shouldGetCommandWhenSharpComesFirst() {
         assertEquals("#quit", processor.getCommand("    #quit"));
     }
 

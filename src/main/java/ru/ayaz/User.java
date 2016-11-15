@@ -1,33 +1,33 @@
 package ru.ayaz;
 
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 public class User {
     private String nickname;
-    private Set<String> ignoredUsersSet;
+    private Set<String> ignoredUsers;
 
 
     public User() {
-        this.ignoredUsersSet = new TreeSet<String>();
+        this.ignoredUsers = new HashSet<String>();
     }
 
-    public void setNickname(String nickname) throws invalidNicknameException {
+    public void setNickname(String nickname) throws InvalidNicknameException {
         validateNickName(nickname);
         this.nickname = nickname;
     }
 
-    private void validateNickName(String nickname) throws invalidNicknameException {
+    private void validateNickName(String nickname) throws InvalidNicknameException {
         if (nickname == null) {
-            throw new invalidNicknameException(nickname);
+            throw new InvalidNicknameException(nickname);
         }
 
         if (isSpacesOnly(nickname)) {
-            throw new invalidNicknameException(nickname);
+            throw new InvalidNicknameException(nickname);
         }
 
         if (isFirstCharDigit(nickname)) {
-            throw new invalidNicknameException(nickname);
+            throw new InvalidNicknameException(nickname);
         }
     }
 
@@ -44,15 +44,17 @@ public class User {
         return nickname;
     }
 
-    public boolean isInIgnoredSet(String nickname) {
-        return ignoredUsersSet.contains(nickname);
+    public boolean isIgnored(String nickname) {
+        return ignoredUsers.contains(nickname);
     }
 
-    public boolean ignoreUser(String blackNickname) {
+    public void ignoreUser(String blackNickname) throws InvalidUserCommandException {
         if (isItMe(blackNickname)) {
-            return false;
+            throw new InvalidUserCommandException("#ignore", blackNickname);
         } else {
-            return ignoredUsersSet.add(blackNickname);
+             if(!ignoredUsers.add(blackNickname)) {
+                 throw new InvalidUserCommandException("#ignore", blackNickname);
+             }
         }
     }
 

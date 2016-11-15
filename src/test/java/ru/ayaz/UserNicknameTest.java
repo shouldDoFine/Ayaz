@@ -20,31 +20,31 @@ public class UserNicknameTest {
     }
 
     @Test
-    public void shouldThrowWhenNullUsedAsNickname() throws Exception {
-        exception.expect(invalidNicknameException.class);
+    public void shouldThrowWhenNullStringUsedAsNickname() throws Exception {
+        exception.expect(InvalidNicknameException.class);
         user.setNickname(null);
     }
 
     @Test
-    public void shouldThrowWhenEmptyAsNickname() throws Exception {
-        exception.expect(invalidNicknameException.class);
+    public void shouldThrowWhenEmptyStringAsNickname() throws Exception {
+        exception.expect(InvalidNicknameException.class);
         user.setNickname("");
     }
 
     @Test
-    public void shouldThrowWhenSpacesAsNickname() throws Exception {
-        exception.expect(invalidNicknameException.class);
+    public void shouldThrowWhenOnlySpacesAsNickname() throws Exception {
+        exception.expect(InvalidNicknameException.class);
         user.setNickname("   ");
     }
 
     @Test
     public void shouldThrowWhenStringHasDigitFirstAsNickname() throws Exception {
-        exception.expect(invalidNicknameException.class);
+        exception.expect(InvalidNicknameException.class);
         user.setNickname("4get");
     }
 
     @Test
-    public void shouldNotThrowWhenStringIsNotAsOtherTestsNicknames() throws Exception {
+    public void shouldAllowForNewNicknames() throws Exception {
         user.setNickname("geeseWatcher123");
         assertEquals("geeseWatcher123", user.getNickname());
     }

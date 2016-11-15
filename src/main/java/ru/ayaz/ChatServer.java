@@ -7,8 +7,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 public class ChatServer {
 
@@ -20,8 +20,8 @@ public class ChatServer {
     public ChatServer() {
         try {
             this.serverSocket = new ServerSocket(4400);
-            this.usersMap = new TreeMap<String, User>();
-            this.outputWriterMap = new TreeMap<String, PrintWriter>();
+            this.usersMap = new HashMap<String, User>();
+            this.outputWriterMap = new HashMap<String, PrintWriter>();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -50,7 +50,7 @@ public class ChatServer {
             String nickname = entry.getKey();
             User user = entry.getValue();
             if (!nickname.equals(sender)) {
-                if (!user.isInIgnoredSet(sender)) {
+                if (!user.isIgnored(sender)) {
                     PrintWriter pw = outputWriterMap.get(nickname);
                     pw.println(message);
                     pw.flush();
@@ -75,7 +75,6 @@ public class ChatServer {
                 this.writer = new PrintWriter(socket.getOutputStream());
                 this.user = new User();
                 this.processor = new MessageProcessor();
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -111,9 +110,8 @@ public class ChatServer {
 
                 Thread.currentThread().interrupt();
 
-            } catch (invalidNicknameException e) {
-                writer.println("Bad nickname " + e.getInvalidNickname() + ".");
-                writer.println("Digit first and spaces are not allowed.");
+            } catch (InvalidNicknameException e) {
+                writer.println(e.toString());
                 writer.flush();
                 writer.close();
                 try {
@@ -146,7 +144,12 @@ public class ChatServer {
                     reader.close();
                     break;
                 case "#ignore":
-                    user.ignoreUser(processor.getFirstArgument(message));
+                    try {
+                        user.ignoreUser(processor.getFirstArgument(message));
+                    } catch (InvalidUserCommandException e) {
+                        writer.println(e.toString());
+                        writer.flush();
+                    }
                     break;
                 default:
                     writer.println("Unknown command");
