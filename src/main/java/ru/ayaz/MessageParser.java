@@ -1,6 +1,6 @@
 package ru.ayaz;
 
-public class MessageProcessor {
+public class MessageParser {
 
     public boolean isCommand(String message) {
         return message.trim().startsWith("#");

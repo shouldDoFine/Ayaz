@@ -8,12 +8,12 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ChatServer {
+public class Chat {
 
     private ServerSocket serverSocket;
     private UserMessageHandler messageHandler;
 
-    public ChatServer() {
+    public Chat() {
         try {
             this.serverSocket = new ServerSocket(4400);
         } catch (IOException e) {

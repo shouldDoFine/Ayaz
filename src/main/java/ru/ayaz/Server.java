@@ -3,7 +3,7 @@ package ru.ayaz;
 public class Server {
 
     public static void main(String[] args) {
-        ChatServer chat = new ChatServer();
+        Chat chat = new Chat();
         chat.start();
     }
 
