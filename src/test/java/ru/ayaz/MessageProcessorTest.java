@@ -6,11 +6,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class MessageProcessorTest {
-    private MessageProcessor processor;
+    private MessageParser processor;
 
     @Before
     public void before() {
-        processor = new MessageProcessor();
+        processor = new MessageParser();
     }
 
 

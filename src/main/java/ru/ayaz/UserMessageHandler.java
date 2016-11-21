@@ -13,14 +13,14 @@ public class UserMessageHandler implements Runnable {
     private Map<String, PrintWriter> outputWriterMap;
     private Map<String, BufferedReader> inputReaderMap;
     private BlockingQueue<UserMessage> messageQueue;
-    private MessageProcessor processor;
+    private MessageParser parser;
 
     public UserMessageHandler(int queueSize) {
         usersMap = new HashMap<String, User>();
         outputWriterMap = new HashMap<String, PrintWriter>();
         inputReaderMap = new HashMap<String, BufferedReader>();
         messageQueue = new ArrayBlockingQueue(queueSize, true);
-        processor = new MessageProcessor();
+        parser = new MessageParser();
     }
 
     public void enqueueMessage(UserMessage message) {
@@ -57,7 +57,7 @@ public class UserMessageHandler implements Runnable {
         try {
             while (true) {
                 UserMessage message = takeMessage();
-                if (processor.isCommand(message.getText())) {
+                if (parser.isCommand(message.getText())) {
                     executeCommand(message);
                 } else {
                     sendMessageToEveryone(message);
@@ -73,27 +73,46 @@ public class UserMessageHandler implements Runnable {
         String nickname = commandMessage.getSenderName();
         String text = commandMessage.getText();
 
-        switch (processor.getCommand(text)) {
+        switch (parser.getCommand(text)) {
             case "#quit":
-                try {
-                    outputWriterMap.get(nickname).close();
-                    inputReaderMap.get(nickname).close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                executeQuitCommand(commandMessage);
                 break;
             case "#ignore":
-                User user = usersMap.get(nickname);
-                try {
-                    user.ignoreUser(processor.getFirstArgument(text));
-                } catch (InvalidUserCommandException e) {
-                    e.printStackTrace();
-                }
+                executeIgnoreCommand(commandMessage);
                 break;
             default:
                 PrintWriter writer = outputWriterMap.get(nickname);
-                sendMessageToExactPerson("Unknown command", writer);;
+                sendMessageToExactPerson("Unknown command", writer);
                 break;
+        }
+    }
+
+
+    private void executeQuitCommand(UserMessage commandMessage) {
+        closeWriterAndReaderInMap(commandMessage.getSenderName());
+    }
+
+
+    private void executeIgnoreCommand(UserMessage commandMessage) {
+        String nickname = commandMessage.getSenderName();
+        String text = commandMessage.getText();
+
+        User user = usersMap.get(nickname);
+        try {
+            user.ignoreUser(parser.getFirstArgument(text));
+        } catch (InvalidUserCommandException e) {
+            PrintWriter writer = outputWriterMap.get(nickname);
+            sendMessageToExactPerson("Invalid argument", writer);
+        }
+    }
+
+
+    private void closeWriterAndReaderInMap(String nickname) {
+        try {
+            outputWriterMap.get(nickname).close();
+            inputReaderMap.get(nickname).close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -112,7 +131,6 @@ public class UserMessageHandler implements Runnable {
 
             PrintWriter writer = outputWriterMap.get(receiverNickname);
             sendMessageToExactPerson(senderNickname + ": " + text, writer);
-
         }
     }
 
