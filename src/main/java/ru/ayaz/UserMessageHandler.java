@@ -9,6 +9,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class UserMessageHandler implements Runnable {
+
     private Map<String, User> usersMap;
     private Map<String, PrintWriter> outputWriterMap;
     private Map<String, BufferedReader> inputReaderMap;
@@ -39,15 +40,15 @@ public class UserMessageHandler implements Runnable {
         return messageQueue.take();
     }
 
-    public void addUserToMap(User user) {
+    public void addToUsersMap(User user) {
         usersMap.put(user.getNickname(), user);
     }
 
-    public void addWriterToMap(String nickname, PrintWriter writer) {
+    public void addToWritersMap(String nickname, PrintWriter writer) {
         outputWriterMap.put(nickname, writer);
     }
 
-    public void addReaderToMap(String nickname, BufferedReader reader) {
+    public void addToReadersMap(String nickname, BufferedReader reader) {
         inputReaderMap.put(nickname, reader);
     }
 
@@ -81,8 +82,8 @@ public class UserMessageHandler implements Runnable {
                 executeIgnoreCommand(commandMessage);
                 break;
             default:
-                PrintWriter writer = outputWriterMap.get(nickname);
-                sendMessageToExactPerson("Unknown command", writer);
+                UserMessage message = new UserMessage(nickname, "Unknown command");
+                sendMessageToOnlyOne(message);
                 break;
         }
     }
@@ -101,8 +102,8 @@ public class UserMessageHandler implements Runnable {
         try {
             user.ignoreUser(parser.getFirstArgument(text));
         } catch (InvalidUserCommandException e) {
-            PrintWriter writer = outputWriterMap.get(nickname);
-            sendMessageToExactPerson("Invalid argument", writer);
+            UserMessage message = new UserMessage(nickname, "Invalid argument");
+            sendMessageToOnlyOne(message);
         }
     }
 
@@ -117,9 +118,9 @@ public class UserMessageHandler implements Runnable {
     }
 
 
-    private void sendMessageToEveryone(UserMessage message) {
-        String senderNickname = message.getSenderName();
-        String text = message.getText();
+    private void sendMessageToEveryone(UserMessage textMessage) {
+        String senderNickname = textMessage.getSenderName();
+        String text = textMessage.getText();
 
         for (Map.Entry<String, User> entry : usersMap.entrySet()) {
             String receiverNickname = entry.getKey();
@@ -129,14 +130,15 @@ public class UserMessageHandler implements Runnable {
                 continue;
             }
 
-            PrintWriter writer = outputWriterMap.get(receiverNickname);
-            sendMessageToExactPerson(senderNickname + ": " + text, writer);
+            UserMessage message = new UserMessage(receiverNickname, senderNickname + ": " + text);
+            sendMessageToOnlyOne(message);
         }
     }
 
 
-    private void sendMessageToExactPerson(String text, PrintWriter writer) {
-        writer.println(text);
+    private void sendMessageToOnlyOne(UserMessage message) {
+        PrintWriter writer = outputWriterMap.get(message.getSenderName());
+        writer.println(message.getText());
         writer.flush();
     }
 }

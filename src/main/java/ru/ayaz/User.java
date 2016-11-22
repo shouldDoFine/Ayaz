@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class User {
+
     private String nickname;
     private Set<String> ignoredUsers;
 

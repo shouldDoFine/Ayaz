@@ -11,31 +11,30 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class UserHandlerTest {
+
     private UserHandler userHandler;
 
     @Before
     public final void before() throws InvalidNicknameException {
         User user = new User();
         user.setNickname("ayaz");
-        userHandler = new UserHandler(user);
+        this.userHandler = new UserHandler(user);
     }
 
 
     @Test
-    public void shouldContainTwoMessagesInQueueWhenPutTwoMessages() throws IOException {
+    public void shouldContainTwoMessagesInQueueWhenEnqueueTwoMessages() throws IOException {
         BufferedReader reader = mock(BufferedReader.class);
         when(reader.readLine()).thenReturn("hi", "how are you?", null);
-
         UserMessageHandler messageHandler = new UserMessageHandler(500);
-        userHandler.setMessageHandler(messageHandler);
-        userHandler.setReader(reader);
-        userHandler.run();
+        this.userHandler.setMessageHandler(messageHandler);
+        this.userHandler.setReader(reader);
+
+        this.userHandler.run();
 
         UserMessage firstMessage = new UserMessage("ayaz", "hi");
         assertTrue(messageHandler.queueContainsMessage(firstMessage));
         UserMessage secondMessage = new UserMessage("ayaz", "how are you?");
         assertTrue(messageHandler.queueContainsMessage(secondMessage));
     }
-
-
 }

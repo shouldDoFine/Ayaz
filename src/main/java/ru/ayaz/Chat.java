@@ -52,9 +52,9 @@ public class Chat {
             welcomeUser(writer);
             User user = new User();
             user.setNickname(reader.readLine());
-            messageHandler.addUserToMap(user);
-            messageHandler.addWriterToMap(user.getNickname(), writer);
-            messageHandler.addReaderToMap(user.getNickname(), reader);
+            messageHandler.addToUsersMap(user);
+            messageHandler.addToWritersMap(user.getNickname(), writer);
+            messageHandler.addToReadersMap(user.getNickname(), reader);
             UserHandler userHandler = new UserHandler(user);
             userHandler.setReader(reader);
             return userHandler;

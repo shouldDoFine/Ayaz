@@ -44,5 +44,4 @@ public class UserIgnoreTest {
         exception.expect(InvalidUserCommandException.class);
         user.ignoreUser("Ayaz");
     }
-
 }

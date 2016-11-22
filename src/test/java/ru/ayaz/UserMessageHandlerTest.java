@@ -1,7 +1,6 @@
 package ru.ayaz;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -23,7 +22,7 @@ public class UserMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutMessage() throws InterruptedException {
+    public void shouldBeAbleToEnqueueMessage() throws InterruptedException {
         UserMessage someMessage = new UserMessage("Ayaz", "Hello");
 
         messageHandler.enqueueMessage(someMessage);
@@ -32,7 +31,7 @@ public class UserMessageHandlerTest {
     }
 
     @Test
-    public void shouldTakeMessage() throws InterruptedException {
+    public void shouldBeAbleToGetEnqueuedMessage() throws InterruptedException {
         UserMessage someMessage = new UserMessage("Ayaz", "Hello");
         messageHandler.enqueueMessage(someMessage);
 
@@ -43,14 +42,14 @@ public class UserMessageHandlerTest {
 
 
     @Test
-    public void shouldInvokePrintUnknownCommandWhenMaliformedCommandPassed() throws InvalidNicknameException, InterruptedException {
+    public void shouldInvokePrintUnknownCommandWhenMalformedCommandTaken() throws InvalidNicknameException, InterruptedException {
         User user = new User();
         user.setNickname("Ayaz");
         UserMessage commandMessage = new UserMessage("Ayaz", "#quiit");
         PrintWriter writer = mock(PrintWriter.class);
         UserMessageHandler spyMessageHandler = spy(messageHandler);
-        spyMessageHandler.addUserToMap(user);
-        spyMessageHandler.addWriterToMap(user.getNickname(), writer);
+        spyMessageHandler.addToUsersMap(user);
+        spyMessageHandler.addToWritersMap(user.getNickname(), writer);
         doReturn(commandMessage).doThrow(InterruptedException.class).when(spyMessageHandler).takeMessage();
 
         spyMessageHandler.run();
@@ -60,15 +59,15 @@ public class UserMessageHandlerTest {
 
 
     @Test
-    public void shouldInvokeIgnoreUserWhenIgnoreCommandAppears() throws InvalidNicknameException, InterruptedException, InvalidUserCommandException{
+    public void shouldInvokeIgnoreUserWhenIgnoreCommandTaken() throws InvalidNicknameException, InterruptedException, InvalidUserCommandException {
         User user = spy(new User());
         user.setNickname("Ayaz");
-        UserMessage commandMessage = new UserMessage("Ayaz", "#ignore spammer123");
+        UserMessage ignoreCommand = new UserMessage("Ayaz", "#ignore spammer123");
         PrintWriter senderWriter = mock(PrintWriter.class);
         UserMessageHandler spyMessageHandler = spy(messageHandler);
-        spyMessageHandler.addUserToMap(user);
-        spyMessageHandler.addWriterToMap(user.getNickname(), senderWriter);
-        doReturn(commandMessage).doThrow(InterruptedException.class).when(spyMessageHandler).takeMessage();
+        spyMessageHandler.addToUsersMap(user);
+        spyMessageHandler.addToWritersMap(user.getNickname(), senderWriter);
+        doReturn(ignoreCommand).doThrow(InterruptedException.class).when(spyMessageHandler).takeMessage();
 
         spyMessageHandler.run();
 
@@ -77,7 +76,7 @@ public class UserMessageHandlerTest {
 
 
     @Test
-    public void shouldInvokeReceiverWritersPrintWhenSimpleMessageAppears() throws InvalidNicknameException, InterruptedException{
+    public void shouldInvokeReceiverWritersPrintWhenSimpleMessageTaken() throws InvalidNicknameException, InterruptedException {
         User userSender = new User();
         User firstUserReceiver = new User();
         User secondUserReceiver = new User();
@@ -88,12 +87,12 @@ public class UserMessageHandlerTest {
         PrintWriter firstReceiverWriter = mock(PrintWriter.class);
         PrintWriter secondReceiverWriter = mock(PrintWriter.class);
         UserMessageHandler spyMessageHandler = spy(messageHandler);
-        spyMessageHandler.addUserToMap(userSender);
-        spyMessageHandler.addUserToMap(firstUserReceiver);
-        spyMessageHandler.addUserToMap(secondUserReceiver);
-        spyMessageHandler.addWriterToMap(userSender.getNickname(), senderWriter);
-        spyMessageHandler.addWriterToMap(firstUserReceiver.getNickname(), firstReceiverWriter);
-        spyMessageHandler.addWriterToMap(secondUserReceiver.getNickname(), secondReceiverWriter);
+        spyMessageHandler.addToUsersMap(userSender);
+        spyMessageHandler.addToUsersMap(firstUserReceiver);
+        spyMessageHandler.addToUsersMap(secondUserReceiver);
+        spyMessageHandler.addToWritersMap(userSender.getNickname(), senderWriter);
+        spyMessageHandler.addToWritersMap(firstUserReceiver.getNickname(), firstReceiverWriter);
+        spyMessageHandler.addToWritersMap(secondUserReceiver.getNickname(), secondReceiverWriter);
         UserMessage commandMessage = new UserMessage("Ayaz", "Hello everyone!");
         doReturn(commandMessage).doThrow(InterruptedException.class).when(spyMessageHandler).takeMessage();
 
@@ -106,22 +105,20 @@ public class UserMessageHandlerTest {
 
 
     @Test
-    public void shouldCloseConnectionWhenQuitCommandAppears() throws InvalidNicknameException, InterruptedException, IOException {
+    public void shouldCloseReaderWhenQuitCommandTaken() throws InvalidNicknameException, InterruptedException, IOException {
         User user = spy(new User());
         user.setNickname("Ayaz");
         UserMessage commandMessage = new UserMessage("Ayaz", "#quit");
         PrintWriter writer = mock(PrintWriter.class);
         BufferedReader reader = mock(BufferedReader.class);
         UserMessageHandler spyMessageHandler = spy(messageHandler);
-        spyMessageHandler.addUserToMap(user);
-        spyMessageHandler.addWriterToMap(user.getNickname(), writer);
-        spyMessageHandler.addReaderToMap(user.getNickname(), reader);
+        spyMessageHandler.addToUsersMap(user);
+        spyMessageHandler.addToWritersMap(user.getNickname(), writer);
+        spyMessageHandler.addToReadersMap(user.getNickname(), reader);
         doReturn(commandMessage).doThrow(InterruptedException.class).when(spyMessageHandler).takeMessage();
 
         spyMessageHandler.run();
 
         verify(reader, times(1)).close();
     }
-
-
 }

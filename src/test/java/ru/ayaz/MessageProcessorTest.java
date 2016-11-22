@@ -6,6 +6,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class MessageProcessorTest {
+
     private MessageParser processor;
 
     @Before
@@ -46,6 +47,4 @@ public class MessageProcessorTest {
         String result = processor.getFirstArgument("  #ignore spammer badGuy123");
         assertEquals("spammer", result);
     }
-
-
 }
