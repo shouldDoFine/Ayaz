@@ -1,6 +1,7 @@
 package ru.ayaz;
 
 public class UserMessage {
+
     private String senderName;
     private String text;
 

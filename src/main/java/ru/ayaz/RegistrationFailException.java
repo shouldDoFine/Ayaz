@@ -1,6 +1,7 @@
 package ru.ayaz;
 
 public class RegistrationFailException extends Exception {
+
     private String cause;
 
     public RegistrationFailException(String cause) {

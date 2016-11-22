@@ -19,6 +19,4 @@ public class MessageParser {
         String[] arguments = message.trim().split("\\s+");
         return arguments[1];
     }
-
-
 }

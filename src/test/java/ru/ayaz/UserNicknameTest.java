@@ -9,10 +9,10 @@ import static org.junit.Assert.assertEquals;
 
 public class UserNicknameTest {
 
+    private User user;
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
-
-    private User user;
 
     @Before
     public final void before() {
@@ -48,6 +48,4 @@ public class UserNicknameTest {
         user.setNickname("geeseWatcher123");
         assertEquals("geeseWatcher123", user.getNickname());
     }
-
-
 }
