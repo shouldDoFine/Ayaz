@@ -90,7 +90,7 @@ public class UserMessageHandler implements Runnable {
 
 
     private void executeQuitCommand(UserMessage commandMessage) {
-        closeWriterAndReaderInMap(commandMessage.getSenderName());
+        closeWriterAndReader(commandMessage.getSenderName());
     }
 
 
@@ -108,7 +108,7 @@ public class UserMessageHandler implements Runnable {
     }
 
 
-    private void closeWriterAndReaderInMap(String nickname) {
+    private void closeWriterAndReader(String nickname) {
         try {
             outputWriterMap.get(nickname).close();
             inputReaderMap.get(nickname).close();

@@ -17,8 +17,7 @@ public class UserMessageHandlerTest {
 
     @Before
     public final void before() {
-        int queueSize = 500;
-        messageHandler = new UserMessageHandler(queueSize);
+        messageHandler = new UserMessageHandler(500);
     }
 
     @Test
