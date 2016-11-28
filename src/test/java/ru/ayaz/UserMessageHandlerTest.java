@@ -3,9 +3,9 @@ package ru.ayaz;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.net.Socket;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -17,7 +17,7 @@ public class UserMessageHandlerTest {
 
     @Before
     public final void before() {
-        messageHandler = new UserMessageHandler(500);
+        messageHandler = spy(new UserMessageHandler());
     }
 
     @Test
@@ -41,83 +41,63 @@ public class UserMessageHandlerTest {
 
 
     @Test
-    public void shouldInvokePrintUnknownCommandWhenMalformedCommandTaken() throws InvalidNicknameException, InterruptedException {
-        User user = new User();
-        user.setNickname("Ayaz");
-        UserMessage commandMessage = new UserMessage("Ayaz", "#quiit");
-        PrintWriter writer = mock(PrintWriter.class);
-        UserMessageHandler spyMessageHandler = spy(messageHandler);
-        spyMessageHandler.addToUsersMap(user);
-        spyMessageHandler.addToWritersMap(user.getNickname(), writer);
-        doReturn(commandMessage).doThrow(InterruptedException.class).when(spyMessageHandler).takeMessage();
+    public void shouldWarnAboutUnknownCommandWhenMalformedCommandTaken() throws Exception {
+        Socket socket = mock(Socket.class);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(100);
+        when(socket.getOutputStream()).thenReturn(outputStream);
+        when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[1]));
+        doReturn(new UserMessage("Ayaz", "#quiit")).doThrow(InterruptedException.class).when(messageHandler).takeMessage();
+        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, messageHandler);
+        userSocketHandler.setNickname("Ayaz");
+        messageHandler.registerInMessageHandler(new User("Ayaz"), userSocketHandler);
 
-        spyMessageHandler.run();
+        messageHandler.run();
 
-        verify(writer, times(1)).println("Unknown command");
+        assertTrue(outputStream.toString().contains("Unknown command"));
     }
 
 
     @Test
-    public void shouldInvokeIgnoreUserWhenIgnoreCommandTaken() throws InvalidNicknameException, InterruptedException, InvalidUserCommandException {
-        User user = spy(new User());
-        user.setNickname("Ayaz");
+    public void shouldIgnoreUserWhenIgnoreCommandTaken() throws InvalidNicknameException, InterruptedException, InvalidUserCommandException {
+        User user = new User("Ayaz");
+        messageHandler.registerInMessageHandler(user, mock(UserSocketHandler.class));
         UserMessage ignoreCommand = new UserMessage("Ayaz", "#ignore spammer123");
-        PrintWriter senderWriter = mock(PrintWriter.class);
-        UserMessageHandler spyMessageHandler = spy(messageHandler);
-        spyMessageHandler.addToUsersMap(user);
-        spyMessageHandler.addToWritersMap(user.getNickname(), senderWriter);
-        doReturn(ignoreCommand).doThrow(InterruptedException.class).when(spyMessageHandler).takeMessage();
+        doReturn(ignoreCommand).doThrow(InterruptedException.class).when(messageHandler).takeMessage();
 
-        spyMessageHandler.run();
+        messageHandler.run();
 
-        verify(user, times(1)).ignoreUser("spammer123");
+        assertTrue(user.isIgnored("spammer123"));
     }
 
 
     @Test
-    public void shouldInvokeReceiverWritersPrintWhenSimpleMessageTaken() throws InvalidNicknameException, InterruptedException {
-        User userSender = new User();
-        User firstUserReceiver = new User();
-        User secondUserReceiver = new User();
-        userSender.setNickname("Ayaz");
-        firstUserReceiver.setNickname("Alexandr");
-        secondUserReceiver.setNickname("Tyson");
-        PrintWriter senderWriter = mock(PrintWriter.class);
-        PrintWriter firstReceiverWriter = mock(PrintWriter.class);
-        PrintWriter secondReceiverWriter = mock(PrintWriter.class);
-        UserMessageHandler spyMessageHandler = spy(messageHandler);
-        spyMessageHandler.addToUsersMap(userSender);
-        spyMessageHandler.addToUsersMap(firstUserReceiver);
-        spyMessageHandler.addToUsersMap(secondUserReceiver);
-        spyMessageHandler.addToWritersMap(userSender.getNickname(), senderWriter);
-        spyMessageHandler.addToWritersMap(firstUserReceiver.getNickname(), firstReceiverWriter);
-        spyMessageHandler.addToWritersMap(secondUserReceiver.getNickname(), secondReceiverWriter);
-        UserMessage commandMessage = new UserMessage("Ayaz", "Hello everyone!");
-        doReturn(commandMessage).doThrow(InterruptedException.class).when(spyMessageHandler).takeMessage();
+    public void shouldWriteToReceiverWhenSimpleMessageTaken() throws Exception {
+        Socket receiverSocket = mock(Socket.class);
+        ByteArrayOutputStream receiverOutput = new ByteArrayOutputStream(100);
+        when(receiverSocket.getOutputStream()).thenReturn(receiverOutput);
+        when(receiverSocket.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+        UserSocketHandler receiverSocketHandler = new UserSocketHandler(receiverSocket, messageHandler);
+        messageHandler.registerInMessageHandler(new User("Ayaz"), mock(UserSocketHandler.class));
+        messageHandler.registerInMessageHandler(new User("Alexandr"), receiverSocketHandler);
+        UserMessage message = new UserMessage("Ayaz", "Hello everyone!");
+        doReturn(message).doThrow(InterruptedException.class).when(messageHandler).takeMessage();
 
-        spyMessageHandler.run();
+        messageHandler.run();
 
-        verify(senderWriter, times(0)).println("Ayaz: Hello everyone!");
-        verify(firstReceiverWriter, times(1)).println("Ayaz: Hello everyone!");
-        verify(secondReceiverWriter, times(1)).println("Ayaz: Hello everyone!");
+        assertTrue(receiverOutput.toString().contains("Hello everyone!"));
     }
 
 
     @Test
-    public void shouldCloseReaderWhenQuitCommandTaken() throws InvalidNicknameException, InterruptedException, IOException {
-        User user = spy(new User());
-        user.setNickname("Ayaz");
+    public void shouldCloseStreamsWhenQuitCommandTaken() throws Exception {
+        User user = spy(new User("Ayaz"));
+        UserSocketHandler userSocketHandler = mock(UserSocketHandler.class);
+        messageHandler.registerInMessageHandler(user, userSocketHandler);
         UserMessage commandMessage = new UserMessage("Ayaz", "#quit");
-        PrintWriter writer = mock(PrintWriter.class);
-        BufferedReader reader = mock(BufferedReader.class);
-        UserMessageHandler spyMessageHandler = spy(messageHandler);
-        spyMessageHandler.addToUsersMap(user);
-        spyMessageHandler.addToWritersMap(user.getNickname(), writer);
-        spyMessageHandler.addToReadersMap(user.getNickname(), reader);
-        doReturn(commandMessage).doThrow(InterruptedException.class).when(spyMessageHandler).takeMessage();
+        doReturn(commandMessage).doThrow(InterruptedException.class).when(messageHandler).takeMessage();
 
-        spyMessageHandler.run();
+        messageHandler.run();
 
-        verify(reader, times(1)).close();
+        verify(userSocketHandler, times(1)).closeStreams();
     }
 }

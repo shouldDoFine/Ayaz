@@ -1,50 +1,43 @@
 package ru.ayaz;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static ru.ayaz.MessageParser.*;
 
-public class MessageProcessorTest {
-
-    private MessageParser processor;
-
-    @Before
-    public void before() {
-        processor = new MessageParser();
-    }
+public class MessageParserTest {
 
 
     @Test
     public void shouldNotBeTreatedAsCommandWhenCharacterComesFirst() {
-        assertEquals(false, processor.isCommand("d#quit"));
+        assertEquals(false, isCommand("d#quit"));
     }
 
     @Test
     public void shouldBeTreatedAsCommandWhenSharpComesRightAfterSpaces() {
-        assertEquals(true, processor.isCommand("    #quit"));
+        assertEquals(true, isCommand("    #quit"));
     }
 
     @Test
     public void shouldGetCommandWhenSharpComesFirst() {
-        assertEquals("#quit", processor.getCommand("    #quit"));
+        assertEquals("#quit", getCommand("    #quit"));
     }
 
     @Test
     public void shouldGetCommandWhenStringHasTwoWords() {
-        assertEquals("#ignore", processor.getCommand("#ignore spammer"));
+        assertEquals("#ignore", getCommand("#ignore spammer"));
     }
 
 
     @Test
     public void shouldGetArgumentWhenStringHasOneArgument() {
-        String result = processor.getFirstArgument("  #ignore spammer");
+        String result = getFirstArgument("  #ignore spammer");
         assertEquals("spammer", result);
     }
 
     @Test
     public void shouldGetFirstArgumentWhenStringHasTwoArguments() {
-        String result = processor.getFirstArgument("  #ignore spammer badGuy123");
+        String result = getFirstArgument("  #ignore spammer badGuy123");
         assertEquals("spammer", result);
     }
 }

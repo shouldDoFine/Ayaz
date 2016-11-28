@@ -2,11 +2,11 @@ package ru.ayaz;
 
 public class MessageParser {
 
-    public boolean isCommand(String message) {
+    static boolean isCommand(String message) {
         return message.trim().startsWith("#");
     }
 
-    public String getCommand(String message) {
+    static String getCommand(String message) {
         String trimmedMessage = message.trim();
         if (trimmedMessage.contains(" ")) {
             return trimmedMessage.substring(0, trimmedMessage.indexOf(" "));
@@ -15,7 +15,7 @@ public class MessageParser {
         }
     }
 
-    public String getFirstArgument(String message) {
+    static String getFirstArgument(String message) {
         String[] arguments = message.trim().split("\\s+");
         return arguments[1];
     }
