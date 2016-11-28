@@ -9,13 +9,13 @@ import static ru.ayaz.MessageParser.getFirstArgument;
 public class CommandExecutor {
 
     private MessageBroadcaster broadcaster;
-    private Map<String, User> usersMap;
-    private Map<String, UserSocketHandler> userHandlerMap;
+    private Map<String, User> userMap;
+    private Map<String, UserSocketHandler> userSocketHandlerMap;
 
-    CommandExecutor(Map<String, User> usersMap, Map<String, UserSocketHandler> userHandlerMap) {
-        this.usersMap = usersMap;
-        this.userHandlerMap = userHandlerMap;
-        broadcaster = new MessageBroadcaster(usersMap, userHandlerMap);
+    CommandExecutor(Map<String, User> userMap, Map<String, UserSocketHandler> userSocketHandlerMap) {
+        this.userMap = userMap;
+        this.userSocketHandlerMap = userSocketHandlerMap;
+        broadcaster = new MessageBroadcaster(userMap, userSocketHandlerMap);
     }
 
     void executeCommand(UserMessage commandMessage) {
@@ -38,9 +38,9 @@ public class CommandExecutor {
 
 
     void executeQuitCommand(UserMessage commandMessage) {
-        UserSocketHandler userHandler = userHandlerMap.get(commandMessage.getSenderName());
+        UserSocketHandler userSocketHandler = userSocketHandlerMap.get(commandMessage.getSenderName());
         try {
-            userHandler.closeStreams();
+            userSocketHandler.closeStreams();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -51,7 +51,7 @@ public class CommandExecutor {
         String nickname = commandMessage.getSenderName();
         String text = commandMessage.getText();
 
-        User user = usersMap.get(nickname);
+        User user = userMap.get(nickname);
         try {
             user.ignoreUser(getFirstArgument(text));
         } catch (InvalidUserCommandException e) {

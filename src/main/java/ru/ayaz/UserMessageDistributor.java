@@ -7,7 +7,7 @@ import java.util.concurrent.BlockingQueue;
 
 import static ru.ayaz.MessageParser.isCommand;
 
-public class UserMessageHandler implements Runnable {
+public class UserMessageDistributor implements Runnable {
 
     private Map<String, User> userMap;
     private Map<String, UserSocketHandler> userSocketHandlerMap;
@@ -15,7 +15,7 @@ public class UserMessageHandler implements Runnable {
     private MessageBroadcaster broadcaster;
     private CommandExecutor executor;
 
-    UserMessageHandler() {
+    UserMessageDistributor() {
         userMap = new HashMap<>();
         userSocketHandlerMap = new HashMap<>();
         messageQueue = new ArrayBlockingQueue(500, true);
@@ -39,7 +39,7 @@ public class UserMessageHandler implements Runnable {
         return messageQueue.take();
     }
 
-    void registerInMessageHandler(User user, UserSocketHandler userSocketHandler) {
+    void registerAtMessageDistributor(User user, UserSocketHandler userSocketHandler) {
         userMap.put(user.getNickname(), user);
         userSocketHandlerMap.put(user.getNickname(), userSocketHandler);
     }
