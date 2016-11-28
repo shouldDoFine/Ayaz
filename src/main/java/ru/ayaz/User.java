@@ -9,13 +9,10 @@ public class User {
     private Set<String> ignoredUsers;
 
 
-    public User() {
-        this.ignoredUsers = new HashSet<String>();
-    }
-
-    public void setNickname(String nickname) throws InvalidNicknameException {
+    User(String nickname) throws InvalidNicknameException {
         validateNickName(nickname);
         this.nickname = nickname;
+        this.ignoredUsers = new HashSet<>();
     }
 
     private void validateNickName(String nickname) throws InvalidNicknameException {
@@ -41,15 +38,15 @@ public class User {
     }
 
 
-    public String getNickname() {
+    String getNickname() {
         return nickname;
     }
 
-    public boolean isIgnored(String nickname) {
-        return ignoredUsers.contains(nickname);
+    boolean isIgnored(String blackNickname) {
+        return ignoredUsers.contains(blackNickname);
     }
 
-    public void ignoreUser(String blackNickname) throws InvalidUserCommandException {
+    void ignoreUser(String blackNickname) throws InvalidUserCommandException {
         if (isItMe(blackNickname)) {
             throw new InvalidUserCommandException("#ignore", blackNickname);
         } else {
@@ -59,8 +56,8 @@ public class User {
         }
     }
 
-    public boolean isItMe(String nickname) {
-        return this.nickname.equals(nickname);
+    boolean isItMe(String blackNickName) {
+        return nickname.equals(blackNickName);
     }
 
 }

@@ -4,7 +4,7 @@ public class InvalidNicknameException extends Exception {
 
     private String invalidNickname;
 
-    public InvalidNicknameException(String invalidNickname) {
+    InvalidNicknameException(String invalidNickname) {
         this.invalidNickname = invalidNickname;
     }
 

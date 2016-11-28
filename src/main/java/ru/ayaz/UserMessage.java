@@ -5,24 +5,24 @@ public class UserMessage {
     private String senderName;
     private String text;
 
-    public UserMessage(String senderName, String message) {
+    UserMessage(String senderName, String message) {
         this.senderName = senderName;
         this.text = message;
     }
 
-    public String getSenderName() {
+    String getSenderName() {
         return senderName;
     }
 
-    public String getText() {
+    String getText() {
         return text;
     }
 
     @Override
     public boolean equals(Object o) {
         UserMessage userMessage = (UserMessage) o;
-        if(this.senderName.equals(userMessage.getSenderName())) {
-            if(this.text.equals(userMessage.getText())){
+        if(senderName.equals(userMessage.getSenderName())) {
+            if(text.equals(userMessage.getText())){
                 return true;
             }
         }

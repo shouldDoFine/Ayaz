@@ -9,43 +9,36 @@ import static org.junit.Assert.assertEquals;
 
 public class UserNicknameTest {
 
-    private User user;
-
     @Rule
     public ExpectedException exception = ExpectedException.none();
-
-    @Before
-    public final void before() {
-        user = new User();
-    }
 
     @Test
     public void shouldThrowWhenNullStringUsedAsNickname() throws Exception {
         exception.expect(InvalidNicknameException.class);
-        user.setNickname(null);
+        new User(null);
     }
 
     @Test
     public void shouldThrowWhenEmptyStringAsNickname() throws Exception {
         exception.expect(InvalidNicknameException.class);
-        user.setNickname("");
+        new User("");
     }
 
     @Test
     public void shouldThrowWhenOnlySpacesAsNickname() throws Exception {
         exception.expect(InvalidNicknameException.class);
-        user.setNickname("   ");
+        new User("   ");
     }
 
     @Test
     public void shouldThrowWhenStringHasDigitFirstAsNickname() throws Exception {
         exception.expect(InvalidNicknameException.class);
-        user.setNickname("4get");
+        new User("4get");
     }
 
     @Test
     public void shouldAllowForNewNicknames() throws Exception {
-        user.setNickname("geeseWatcher123");
+        User user = new User("geeseWatcher123");
         assertEquals("geeseWatcher123", user.getNickname());
     }
 }
