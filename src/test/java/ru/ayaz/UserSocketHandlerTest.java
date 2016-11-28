@@ -14,17 +14,17 @@ import static org.mockito.Mockito.when;
 public class UserSocketHandlerTest {
 
     @Test
-    public void shouldContainMessageInQueueWhenReadFromStream() throws IOException, InvalidNicknameException {
+    public void shouldContainMessageInQueueWhenReadFromStreamAndEnqueued() throws IOException, InvalidNicknameException {
         Socket socket = mock(Socket.class);
         when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(("hi everyone").getBytes()));
         when(socket.getOutputStream()).thenReturn(new ByteArrayOutputStream());
-        UserMessageHandler messageHandler = new UserMessageHandler();
-        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, messageHandler);
+        UserMessageDistributor messageDistributor = new UserMessageDistributor();
+        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, messageDistributor);
         userSocketHandler.setNickname("ayaz");
-        messageHandler.registerInMessageHandler(new User("ayaz"), userSocketHandler);
+        messageDistributor.registerAtMessageDistributor(new User("ayaz"), userSocketHandler);
 
         userSocketHandler.run();
 
-        assertTrue(messageHandler.queueContainsMessage(new UserMessage("ayaz", "hi everyone")));
+        assertTrue(messageDistributor.queueContainsMessage(new UserMessage("ayaz", "hi everyone")));
     }
 }

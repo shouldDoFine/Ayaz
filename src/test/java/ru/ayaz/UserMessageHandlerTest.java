@@ -13,28 +13,28 @@ import static org.mockito.Mockito.*;
 
 public class UserMessageHandlerTest {
 
-    private UserMessageHandler messageHandler;
+    private UserMessageDistributor messageDistributor;
 
     @Before
     public final void before() {
-        messageHandler = spy(new UserMessageHandler());
+        messageDistributor = spy(new UserMessageDistributor());
     }
 
     @Test
     public void shouldBeAbleToEnqueueMessage() throws InterruptedException {
         UserMessage someMessage = new UserMessage("Ayaz", "Hello");
 
-        messageHandler.enqueueMessage(someMessage);
+        messageDistributor.enqueueMessage(someMessage);
 
-        assertTrue(messageHandler.queueContainsMessage(someMessage));
+        assertTrue(messageDistributor.queueContainsMessage(someMessage));
     }
 
     @Test
     public void shouldBeAbleToGetEnqueuedMessage() throws InterruptedException {
         UserMessage someMessage = new UserMessage("Ayaz", "Hello");
-        messageHandler.enqueueMessage(someMessage);
+        messageDistributor.enqueueMessage(someMessage);
 
-        UserMessage gottenMessage = messageHandler.takeMessage();
+        UserMessage gottenMessage = messageDistributor.takeMessage();
 
         assertEquals(someMessage, gottenMessage);
     }
@@ -46,12 +46,12 @@ public class UserMessageHandlerTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(100);
         when(socket.getOutputStream()).thenReturn(outputStream);
         when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[1]));
-        doReturn(new UserMessage("Ayaz", "#quiit")).doThrow(InterruptedException.class).when(messageHandler).takeMessage();
-        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, messageHandler);
+        doReturn(new UserMessage("Ayaz", "#quiit")).doThrow(InterruptedException.class).when(messageDistributor).takeMessage();
+        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, messageDistributor);
         userSocketHandler.setNickname("Ayaz");
-        messageHandler.registerInMessageHandler(new User("Ayaz"), userSocketHandler);
+        messageDistributor.registerAtMessageDistributor(new User("Ayaz"), userSocketHandler);
 
-        messageHandler.run();
+        messageDistributor.run();
 
         assertTrue(outputStream.toString().contains("Unknown command"));
     }
@@ -60,11 +60,11 @@ public class UserMessageHandlerTest {
     @Test
     public void shouldIgnoreUserWhenIgnoreCommandTaken() throws InvalidNicknameException, InterruptedException, InvalidUserCommandException {
         User user = new User("Ayaz");
-        messageHandler.registerInMessageHandler(user, mock(UserSocketHandler.class));
+        messageDistributor.registerAtMessageDistributor(user, mock(UserSocketHandler.class));
         UserMessage ignoreCommand = new UserMessage("Ayaz", "#ignore spammer123");
-        doReturn(ignoreCommand).doThrow(InterruptedException.class).when(messageHandler).takeMessage();
+        doReturn(ignoreCommand).doThrow(InterruptedException.class).when(messageDistributor).takeMessage();
 
-        messageHandler.run();
+        messageDistributor.run();
 
         assertTrue(user.isIgnored("spammer123"));
     }
@@ -76,27 +76,27 @@ public class UserMessageHandlerTest {
         ByteArrayOutputStream receiverOutput = new ByteArrayOutputStream(100);
         when(receiverSocket.getOutputStream()).thenReturn(receiverOutput);
         when(receiverSocket.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
-        UserSocketHandler receiverSocketHandler = new UserSocketHandler(receiverSocket, messageHandler);
-        messageHandler.registerInMessageHandler(new User("Ayaz"), mock(UserSocketHandler.class));
-        messageHandler.registerInMessageHandler(new User("Alexandr"), receiverSocketHandler);
+        UserSocketHandler receiverSocketHandler = new UserSocketHandler(receiverSocket, messageDistributor);
+        messageDistributor.registerAtMessageDistributor(new User("Ayaz"), mock(UserSocketHandler.class));
+        messageDistributor.registerAtMessageDistributor(new User("Alexandr"), receiverSocketHandler);
         UserMessage message = new UserMessage("Ayaz", "Hello everyone!");
-        doReturn(message).doThrow(InterruptedException.class).when(messageHandler).takeMessage();
+        doReturn(message).doThrow(InterruptedException.class).when(messageDistributor).takeMessage();
 
-        messageHandler.run();
+        messageDistributor.run();
 
         assertTrue(receiverOutput.toString().contains("Hello everyone!"));
     }
 
 
     @Test
-    public void shouldCloseStreamsWhenQuitCommandTaken() throws Exception {
+    public void shouldInvokeCloseStreamsWhenQuitCommandTaken() throws Exception {
         User user = spy(new User("Ayaz"));
         UserSocketHandler userSocketHandler = mock(UserSocketHandler.class);
-        messageHandler.registerInMessageHandler(user, userSocketHandler);
+        messageDistributor.registerAtMessageDistributor(user, userSocketHandler);
         UserMessage commandMessage = new UserMessage("Ayaz", "#quit");
-        doReturn(commandMessage).doThrow(InterruptedException.class).when(messageHandler).takeMessage();
+        doReturn(commandMessage).doThrow(InterruptedException.class).when(messageDistributor).takeMessage();
 
-        messageHandler.run();
+        messageDistributor.run();
 
         verify(userSocketHandler, times(1)).closeStreams();
     }

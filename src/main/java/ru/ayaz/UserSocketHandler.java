@@ -12,12 +12,12 @@ public class UserSocketHandler implements Runnable {
     private String nickname;
     private PrintWriter writer;
     private BufferedReader reader;
-    private UserMessageHandler messageHandler;
+    private UserMessageDistributor messageDistributor;
 
-    UserSocketHandler(Socket socket,UserMessageHandler messageHandler) throws IOException {
+    UserSocketHandler(Socket socket,UserMessageDistributor messageDistributor) throws IOException {
         this.writer = new PrintWriter(socket.getOutputStream());
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.messageHandler = messageHandler;
+        this.messageDistributor = messageDistributor;
     }
 
     void setNickname(String nickname) {
@@ -38,7 +38,7 @@ public class UserSocketHandler implements Runnable {
         try {
             while ((message = listenForMessage()) != null) {
                 UserMessage userMessage = new UserMessage(nickname, message);
-                messageHandler.enqueueMessage(userMessage);
+                messageDistributor.enqueueMessage(userMessage);
             }
         } catch (IOException e) {
             System.out.println(nickname + " left chat");

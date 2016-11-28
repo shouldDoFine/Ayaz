@@ -10,7 +10,7 @@ import java.net.Socket;
 public class Chat {
 
     private ServerSocket serverSocket;
-    private UserMessageHandler messageHandler;
+    private UserMessageDistributor messageHandler;
 
     Chat() {
         try {
@@ -29,7 +29,7 @@ public class Chat {
                 UserSocketHandler userSocketHandler = new UserSocketHandler(socket, messageHandler);
                 User user = registerUser(userSocketHandler.getWriter(), userSocketHandler.getReader());
                 userSocketHandler.setNickname(user.getNickname());
-                messageHandler.registerInMessageHandler(user, userSocketHandler);
+                messageHandler.registerAtMessageDistributor(user, userSocketHandler);
                 new Thread(userSocketHandler).start();
             }
         } catch (IOException e) {
@@ -41,7 +41,7 @@ public class Chat {
 
 
     private void startUserMessageHandler() {
-        messageHandler = new UserMessageHandler();
+        messageHandler = new UserMessageDistributor();
         new Thread(messageHandler).start();
     }
 
