@@ -16,7 +16,7 @@ public class UserIgnoreTest {
 
     @Before
     public final void before() throws InvalidNicknameException {
-        user = new User("Ayaz");
+        this.user = new User("Ayaz");
     }
 
     @Test

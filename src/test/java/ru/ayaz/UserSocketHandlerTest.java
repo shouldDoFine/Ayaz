@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 
 import static org.junit.Assert.assertTrue;
@@ -14,7 +13,7 @@ import static org.mockito.Mockito.when;
 public class UserSocketHandlerTest {
 
     @Test
-    public void shouldContainMessageInQueueWhenReadFromStreamAndEnqueued() throws IOException, InvalidNicknameException {
+    public void shouldContainMessageInQueueWhenReadFromStreamAndEnqueued() throws Exception {
         Socket socket = mock(Socket.class);
         when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(("hi everyone").getBytes()));
         when(socket.getOutputStream()).thenReturn(new ByteArrayOutputStream());

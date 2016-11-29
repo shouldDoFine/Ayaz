@@ -15,7 +15,7 @@ public class CommandExecutor {
     CommandExecutor(Map<String, User> userMap, Map<String, UserSocketHandler> userSocketHandlerMap) {
         this.userMap = userMap;
         this.userSocketHandlerMap = userSocketHandlerMap;
-        broadcaster = new MessageBroadcaster(userMap, userSocketHandlerMap);
+        this.broadcaster = new MessageBroadcaster(userMap, userSocketHandlerMap);
     }
 
     void executeCommand(UserMessage commandMessage) {
