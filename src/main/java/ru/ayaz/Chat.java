@@ -41,7 +41,7 @@ public class Chat {
 
 
     private void startUserMessageHandler() {
-        messageHandler = new UserMessageDistributor();
+        this.messageHandler = new UserMessageDistributor();
         new Thread(messageHandler).start();
     }
 
