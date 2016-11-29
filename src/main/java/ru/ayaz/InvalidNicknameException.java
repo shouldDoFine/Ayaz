@@ -12,5 +12,4 @@ public class InvalidNicknameException extends Exception {
     public String toString() {
         return "Bad nickname " + invalidNickname + "." + "Digit first and spaces are not allowed.";
     }
-
 }

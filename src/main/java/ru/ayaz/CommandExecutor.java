@@ -30,8 +30,7 @@ public class CommandExecutor {
                 executeIgnoreCommand(commandMessage);
                 break;
             default:
-                UserMessage message = new UserMessage(nickname, "Unknown command");
-                broadcaster.sendMessageToOnlyOne(message);
+                broadcaster.sendTextToOnlyOne("Unknown command", nickname);
                 break;
         }
     }
@@ -55,8 +54,7 @@ public class CommandExecutor {
         try {
             user.ignoreUser(getFirstArgument(text));
         } catch (InvalidUserCommandException e) {
-            UserMessage message = new UserMessage(nickname, "Invalid argument");
-            broadcaster.sendMessageToOnlyOne(message);
+            broadcaster.sendTextToOnlyOne("Invalid argument", nickname);
         }
     }
 }

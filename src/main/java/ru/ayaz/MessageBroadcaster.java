@@ -18,21 +18,20 @@ public class MessageBroadcaster {
 
         for (Map.Entry<String, User> entry : userMap.entrySet()) {
             String receiverNickname = entry.getKey();
-            User user = entry.getValue();
+            User receiverUser = entry.getValue();
 
-            if (user.isItMe(senderNickname)) {
+            if (receiverUser.isItMe(senderNickname)) {
                 continue;
             }
 
-            UserMessage message = new UserMessage(receiverNickname, senderNickname + ": " + text);
-            sendMessageToOnlyOne(message);
+            if (!receiverUser.isIgnored(senderNickname)) {
+                sendTextToOnlyOne(senderNickname + ": " + text, receiverNickname);
+            }
         }
     }
 
-
-    void sendMessageToOnlyOne(UserMessage message) {
-        UserSocketHandler userSocketHandler = userSocketHandlerMap.get(message.getSenderName());
-        userSocketHandler.sendMessage(message);
+    void sendTextToOnlyOne(String text, String receiverNickname) {
+        UserSocketHandler userSocketHandler = userSocketHandlerMap.get(receiverNickname);
+        userSocketHandler.sendMessage(text);
     }
-
 }

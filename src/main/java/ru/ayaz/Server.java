@@ -6,5 +6,4 @@ public class Server {
         Chat chat = new Chat();
         chat.start();
     }
-
 }
