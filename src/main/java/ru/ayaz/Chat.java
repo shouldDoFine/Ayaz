@@ -1,6 +1,9 @@
 package ru.ayaz;
 
 
+import ru.ayaz.ru.ayaz.exceptions.InvalidNicknameException;
+import ru.ayaz.ru.ayaz.exceptions.RegistrationFailException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;

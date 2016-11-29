@@ -4,6 +4,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import ru.ayaz.ru.ayaz.exceptions.InvalidNicknameException;
+import ru.ayaz.ru.ayaz.exceptions.InvalidUserCommandException;
 
 import static org.junit.Assert.assertTrue;
 
