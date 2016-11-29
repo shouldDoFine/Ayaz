@@ -1,5 +1,7 @@
 package ru.ayaz;
 
+import ru.ayaz.ru.ayaz.exceptions.InvalidUserCommandException;
+
 import java.io.IOException;
 import java.util.Map;
 

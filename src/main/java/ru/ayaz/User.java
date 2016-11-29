@@ -1,5 +1,8 @@
 package ru.ayaz;
 
+import ru.ayaz.ru.ayaz.exceptions.InvalidNicknameException;
+import ru.ayaz.ru.ayaz.exceptions.InvalidUserCommandException;
+
 import java.util.HashSet;
 import java.util.Set;
 

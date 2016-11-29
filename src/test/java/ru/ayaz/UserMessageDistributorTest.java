@@ -2,6 +2,8 @@ package ru.ayaz;
 
 import org.junit.Before;
 import org.junit.Test;
+import ru.ayaz.ru.ayaz.exceptions.InvalidNicknameException;
+import ru.ayaz.ru.ayaz.exceptions.InvalidUserCommandException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

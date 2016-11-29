@@ -1,10 +1,10 @@
-package ru.ayaz;
+package ru.ayaz.ru.ayaz.exceptions;
 
 public class InvalidNicknameException extends Exception {
 
     private String invalidNickname;
 
-    InvalidNicknameException(String invalidNickname) {
+    public InvalidNicknameException(String invalidNickname) {
         this.invalidNickname = invalidNickname;
     }
 
