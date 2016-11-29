@@ -11,7 +11,7 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Mockito.*;
 
-public class UserMessageHandlerTest {
+public class UserMessageDistributorTest {
 
     private UserMessageDistributor messageDistributor;
 

@@ -14,5 +14,4 @@ public class InvalidUserCommandException extends Exception {
     public String toString() {
         return "Invalid command: " + invalidCommand + " with argument " + invalidArgument;
     }
-
 }

@@ -59,5 +59,4 @@ public class User {
     boolean isItMe(String blackNickName) {
         return nickname.equals(blackNickName);
     }
-
 }

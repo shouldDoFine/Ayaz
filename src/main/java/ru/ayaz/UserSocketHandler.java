@@ -45,8 +45,8 @@ public class UserSocketHandler implements Runnable {
         }
     }
 
-    void sendMessage(UserMessage message) {
-        writer.println(message.getText());
+    void sendMessage(String text) {
+        writer.println(text);
         writer.flush();
     }
 
