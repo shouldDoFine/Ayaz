@@ -15,12 +15,13 @@ public class UserMessageDistributor implements Runnable {
     private MessageBroadcaster broadcaster;
     private CommandExecutor executor;
 
-    UserMessageDistributor() {
-        this.userMap = new HashMap<>();
-        this.userSocketHandlerMap = new HashMap<>();
-        this.messageQueue = new ArrayBlockingQueue(500, true);
-        this.broadcaster = new MessageBroadcaster(userMap, userSocketHandlerMap);
-        this.executor = new CommandExecutor(userMap, userSocketHandlerMap);
+    UserMessageDistributor(HashMap<String, User> userMap, HashMap<String, UserSocketHandler> userSocketHandlerMap,
+                           BlockingQueue<UserMessage> queue, MessageBroadcaster broadcaster, CommandExecutor executor) {
+        this.userMap = userMap;
+        this.userSocketHandlerMap = userSocketHandlerMap;
+        this.messageQueue = queue;
+        this.broadcaster = broadcaster;
+        this.executor = executor;
     }
 
     void enqueueMessage(UserMessage message) {

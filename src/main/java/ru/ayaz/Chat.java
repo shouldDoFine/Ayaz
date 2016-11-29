@@ -9,11 +9,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 public class Chat {
 
     private ServerSocket serverSocket;
-    private UserMessageDistributor messageHandler;
+    private UserMessageDistributor messageDistributor;
 
     Chat() {
         try {
@@ -25,14 +28,14 @@ public class Chat {
 
 
     void start() {
-        startUserMessageHandler();
+        startUserMessageDistributor();
         try {
             while (true) {
                 Socket socket = serverSocket.accept();
-                UserSocketHandler userSocketHandler = new UserSocketHandler(socket, messageHandler);
+                UserSocketHandler userSocketHandler = new UserSocketHandler(socket, messageDistributor);
                 User user = registerUser(userSocketHandler.getWriter(), userSocketHandler.getReader());
                 userSocketHandler.setNickname(user.getNickname());
-                messageHandler.registerAtMessageDistributor(user, userSocketHandler);
+                messageDistributor.registerAtMessageDistributor(user, userSocketHandler);
                 new Thread(userSocketHandler).start();
             }
         } catch (IOException e) {
@@ -43,9 +46,14 @@ public class Chat {
     }
 
 
-    private void startUserMessageHandler() {
-        this.messageHandler = new UserMessageDistributor();
-        new Thread(messageHandler).start();
+    private void startUserMessageDistributor() {
+        HashMap<String, User> userMap = new HashMap<>();
+        HashMap<String, UserSocketHandler> userSocketHandlerMap = new HashMap<>();
+        BlockingQueue<UserMessage> messageQueue = new ArrayBlockingQueue(500, true);
+        MessageBroadcaster broadcaster = new MessageBroadcaster(userMap, userSocketHandlerMap);
+        CommandExecutor executor = new CommandExecutor(userMap, userSocketHandlerMap);
+        this.messageDistributor = new UserMessageDistributor(userMap, userSocketHandlerMap, messageQueue, broadcaster, executor);
+        new Thread(messageDistributor).start();
     }
 
 
