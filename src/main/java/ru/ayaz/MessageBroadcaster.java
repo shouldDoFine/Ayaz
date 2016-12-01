@@ -24,15 +24,13 @@ public class MessageBroadcaster {
                 continue;
             }
 
-            UserMessage message = new UserMessage(receiverNickname, senderNickname + ": " + text);
-            sendMessageToOnlyOne(message);
+            UserMessage message = new UserMessage(senderNickname, senderNickname + ": " + text);
+            sendMessageToOnlyOne(message, receiverNickname);
         }
     }
 
-
-    void sendMessageToOnlyOne(UserMessage message) {
-        UserSocketHandler userSocketHandler = userSocketHandlerMap.get(message.getSenderName());
+    void sendMessageToOnlyOne(UserMessage message, String receiverNickname) {
+        UserSocketHandler userSocketHandler = userSocketHandlerMap.get(receiverNickname);
         userSocketHandler.sendMessage(message);
     }
-
 }
