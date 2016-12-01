@@ -8,6 +8,9 @@ import ru.ayaz.ru.ayaz.exceptions.InvalidUserCommandException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -16,10 +19,17 @@ import static org.mockito.Mockito.*;
 public class UserMessageDistributorTest {
 
     private UserMessageDistributor messageDistributor;
+    private CommandExecutor executor;
+    private MessageBroadcaster broadcaster;
 
     @Before
     public final void before() {
-        this.messageDistributor = spy(new UserMessageDistributor());
+        HashMap<String, User> userMap = new HashMap<>();
+        HashMap<String, UserSocketHandler> userSocketHandlerMap = new HashMap<>();
+        BlockingQueue<UserMessage> messageQueue = new ArrayBlockingQueue(500, true);
+        this.broadcaster = mock(MessageBroadcaster.class);
+        this.executor = mock(CommandExecutor.class);
+        this.messageDistributor = spy(new UserMessageDistributor(userMap, userSocketHandlerMap, messageQueue, broadcaster, executor));
     }
 
     @Test
@@ -44,61 +54,23 @@ public class UserMessageDistributorTest {
 
 
     @Test
-    public void shouldWarnAboutUnknownCommandWhenMalformedCommandTaken() throws Exception {
-        Socket socket = mock(Socket.class);
-        ByteArrayOutputStream output = new ByteArrayOutputStream(100);
-        when(socket.getOutputStream()).thenReturn(output);
-        when(socket.getInputStream()).thenReturn(mock(ByteArrayInputStream.class));
-        UserSocketHandler receiverSocketHandler = new UserSocketHandler(socket, messageDistributor);
-        messageDistributor.registerAtMessageDistributor(new User("Ayaz"), receiverSocketHandler);
-        UserMessage malformedCommand = new UserMessage("Ayaz", "#quiiiit");
-        doReturn(malformedCommand).doThrow(InterruptedException.class).when(messageDistributor).takeMessage();
+    public void shouldDistributeMessageToExecutorWhenCommandTaken() throws Exception {
+        UserMessage command = new UserMessage("Ayaz", "#quit");
+        doReturn(command).doThrow(InterruptedException.class).when(messageDistributor).takeMessage();
 
         messageDistributor.run();
 
-        assertTrue(output.toString().contains("Unknown command"));
+        verify(executor, times(1)).executeCommand(command);
     }
 
 
     @Test
-    public void shouldWriteToReceiverWhenSimpleMessageTaken() throws Exception {
-        Socket receiverSocket = mock(Socket.class);
-        ByteArrayOutputStream receiverOutput = new ByteArrayOutputStream(100);
-        when(receiverSocket.getOutputStream()).thenReturn(receiverOutput);
-        when(receiverSocket.getInputStream()).thenReturn(mock(ByteArrayInputStream.class));
-        UserSocketHandler receiverSocketHandler = new UserSocketHandler(receiverSocket, messageDistributor);
-        messageDistributor.registerAtMessageDistributor(new User("receiverNickname"), receiverSocketHandler);
-        UserMessage message = new UserMessage("senderNickname", "Hello everyone!");
+    public void shouldDistributeMessageToBroadcasterWhenTextMessageTaken() throws Exception {
+        UserMessage message = new UserMessage("Ayaz", "Hello everyone!");
         doReturn(message).doThrow(InterruptedException.class).when(messageDistributor).takeMessage();
 
         messageDistributor.run();
 
-        assertTrue(receiverOutput.toString().contains("Hello everyone!"));
-    }
-
-
-    @Test
-    public void shouldIgnoreUserWhenIgnoreCommandTaken() throws InvalidNicknameException, InterruptedException, InvalidUserCommandException {
-        User user = new User("Ayaz");
-        messageDistributor.registerAtMessageDistributor(user, mock(UserSocketHandler.class));
-        UserMessage ignoreCommand = new UserMessage("Ayaz", "#ignore spammer123");
-        doReturn(ignoreCommand).doThrow(InterruptedException.class).when(messageDistributor).takeMessage();
-
-        messageDistributor.run();
-
-        assertTrue(user.isIgnored("spammer123"));
-    }
-
-
-    @Test
-    public void shouldInvokeCloseStreamsWhenQuitCommandTaken() throws Exception {
-        UserSocketHandler userSocketHandler = mock(UserSocketHandler.class);
-        messageDistributor.registerAtMessageDistributor(new User("Ayaz"), userSocketHandler);
-        UserMessage quitCommand = new UserMessage("Ayaz", "#quit");
-        doReturn(quitCommand).doThrow(InterruptedException.class).when(messageDistributor).takeMessage();
-
-        messageDistributor.run();
-
-        verify(userSocketHandler, times(1)).closeStreams();
+        verify(broadcaster, times(1)).sendMessageToEveryone(message);
     }
 }

@@ -51,7 +51,7 @@ public class Chat {
         HashMap<String, UserSocketHandler> userSocketHandlerMap = new HashMap<>();
         BlockingQueue<UserMessage> messageQueue = new ArrayBlockingQueue(500, true);
         MessageBroadcaster broadcaster = new MessageBroadcaster(userMap, userSocketHandlerMap);
-        CommandExecutor executor = new CommandExecutor(userMap, userSocketHandlerMap);
+        CommandExecutor executor = new CommandExecutor(userMap, userSocketHandlerMap, broadcaster);
         this.messageDistributor = new UserMessageDistributor(userMap, userSocketHandlerMap, messageQueue, broadcaster, executor);
         new Thread(messageDistributor).start();
     }

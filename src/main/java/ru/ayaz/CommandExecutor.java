@@ -14,10 +14,10 @@ public class CommandExecutor {
     private Map<String, User> userMap;
     private Map<String, UserSocketHandler> userSocketHandlerMap;
 
-    CommandExecutor(Map<String, User> userMap, Map<String, UserSocketHandler> userSocketHandlerMap) {
+    CommandExecutor(Map<String, User> userMap, Map<String, UserSocketHandler> userSocketHandlerMap, MessageBroadcaster broadcaster) {
         this.userMap = userMap;
         this.userSocketHandlerMap = userSocketHandlerMap;
-        this.broadcaster = new MessageBroadcaster(userMap, userSocketHandlerMap);
+        this.broadcaster = broadcaster;
     }
 
     void executeCommand(UserMessage commandMessage) {
@@ -33,16 +33,18 @@ public class CommandExecutor {
                 break;
             default:
                 UserMessage message = new UserMessage(nickname, "Unknown command");
-                broadcaster.sendMessageToOnlyOne(message);
+                broadcaster.sendMessageToOnlyOne(message, nickname);
                 break;
         }
     }
 
 
-    void executeQuitCommand(UserMessage commandMessage) {
+    private void executeQuitCommand(UserMessage commandMessage) {
         UserSocketHandler userSocketHandler = userSocketHandlerMap.get(commandMessage.getSenderName());
         try {
             userSocketHandler.closeStreams();
+            userMap.remove(commandMessage.getSenderName());
+            userSocketHandlerMap.remove(commandMessage.getSenderName());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -57,8 +59,8 @@ public class CommandExecutor {
         try {
             user.ignoreUser(getFirstArgument(text));
         } catch (InvalidUserCommandException e) {
-            UserMessage message = new UserMessage(nickname, "Invalid argument");
-            broadcaster.sendMessageToOnlyOne(message);
+            UserMessage message = new UserMessage(nickname, "Invalid command");
+            broadcaster.sendMessageToOnlyOne(message, nickname);
         }
     }
 }
