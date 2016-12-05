@@ -53,9 +53,9 @@ public class User {
         if (isItMe(blackNickname)) {
             throw new InvalidUserCommandException("#ignore", blackNickname);
         } else {
-             if(!ignoredUsers.add(blackNickname)) {
-                 throw new InvalidUserCommandException("#ignore", blackNickname);
-             }
+            if (!ignoredUsers.add(blackNickname)) {
+                throw new InvalidUserCommandException("#ignore", blackNickname);
+            }
         }
     }
 

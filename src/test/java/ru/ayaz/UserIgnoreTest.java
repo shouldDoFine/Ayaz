@@ -7,8 +7,6 @@ import org.junit.rules.ExpectedException;
 import ru.ayaz.ru.ayaz.exceptions.InvalidNicknameException;
 import ru.ayaz.ru.ayaz.exceptions.InvalidUserCommandException;
 
-import static org.junit.Assert.assertTrue;
-
 public class UserIgnoreTest {
 
     @Rule
