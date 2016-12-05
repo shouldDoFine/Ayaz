@@ -3,10 +3,11 @@ package ru.ayaz;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static ru.ayaz.MessageParser.*;
+import static ru.ayaz.CommandExecutor.getCommand;
+import static ru.ayaz.CommandExecutor.getFirstArgument;
+import static ru.ayaz.UserSocketHandler.isCommand;
 
-public class MessageParserTest {
-
+public class CommandExecutorParseTest {
 
     @Test
     public void shouldNotBeTreatedAsCommandWhenCharacterComesFirst() {
@@ -27,7 +28,6 @@ public class MessageParserTest {
     public void shouldGetCommandWhenStringHasTwoWords() {
         assertEquals("#ignore", getCommand("#ignore spammer"));
     }
-
 
     @Test
     public void shouldGetArgumentWhenStringHasOneArgument() {

@@ -1,5 +1,7 @@
 package ru.ayaz;
 
+import ru.ayaz.ru.ayaz.exceptions.InvalidNicknameException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,27 +11,22 @@ import java.net.Socket;
 
 public class UserSocketHandler implements Runnable {
 
-    private String nickname;
+    private ChatRoom room;
     private PrintWriter writer;
     private BufferedReader reader;
-    private UserMessageDistributor messageDistributor;
+    private User user;
+    private CommandExecutor executor;
 
-    UserSocketHandler(Socket socket,UserMessageDistributor messageDistributor) throws IOException {
+    UserSocketHandler(Socket socket, ChatRoom messageDistributor) throws IOException, InvalidNicknameException {
         this.writer = new PrintWriter(socket.getOutputStream());
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.messageDistributor = messageDistributor;
+        this.room = messageDistributor;
+        this.user = registerUser();
+        this.executor = new CommandExecutor(user, this);
     }
 
-    void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
-
-    PrintWriter getWriter() {
-        return writer;
-    }
-
-    BufferedReader getReader() {
-        return reader;
+    public User getUser() {
+        return user;
     }
 
     @Override
@@ -37,11 +34,15 @@ public class UserSocketHandler implements Runnable {
         String message;
         try {
             while ((message = listenForMessage()) != null) {
-                UserMessage userMessage = new UserMessage(nickname, message);
-                messageDistributor.enqueueMessage(userMessage);
+                UserMessage userMessage = new UserMessage(user.getNickname(), message);
+                if (isCommand(userMessage.getText())) {
+                    executor.executeCommand(userMessage);
+                } else {
+                    room.enqueueMessage(userMessage);
+                }
             }
         } catch (IOException e) {
-            System.out.println(nickname + " left chat");
+            System.out.println(user.getNickname() + " left chat");
         }
     }
 
@@ -55,7 +56,20 @@ public class UserSocketHandler implements Runnable {
         reader.close();
     }
 
+    private void askNickname() {
+        sendMessage(new UserMessage("SYSTEM", "Enter your nickname: \n"));
+    }
+
+    private User registerUser() throws IOException, InvalidNicknameException {
+        askNickname();
+        return new User(listenForMessage());
+    }
+
     private String listenForMessage() throws IOException {
         return reader.readLine();
+    }
+
+    static boolean isCommand(String message) {
+        return message.trim().startsWith("#");
     }
 }

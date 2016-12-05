@@ -21,8 +21,8 @@ public class UserMessage {
     @Override
     public boolean equals(Object o) {
         UserMessage userMessage = (UserMessage) o;
-        if(senderName.equals(userMessage.getSenderName())) {
-            if(text.equals(userMessage.getText())){
+        if (senderName.equals(userMessage.getSenderName())) {
+            if (text.equals(userMessage.getText())) {
                 return true;
             }
         }

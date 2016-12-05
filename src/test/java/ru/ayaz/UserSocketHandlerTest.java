@@ -6,7 +6,6 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -16,29 +15,38 @@ import static org.mockito.Mockito.when;
 
 public class UserSocketHandlerTest {
 
-    private UserMessageDistributor messageDistributor;
+    private ChatRoom room;
 
     @Before
     public final void before() {
-        HashMap<String, User> userMap = new HashMap<>();
-        HashMap<String, UserSocketHandler> userSocketHandlerMap = new HashMap<>();
         BlockingQueue<UserMessage> messageQueue = new ArrayBlockingQueue(500, true);
-        MessageBroadcaster broadcaster = new MessageBroadcaster(userMap, userSocketHandlerMap);
-        CommandExecutor executor = new CommandExecutor(userMap, userSocketHandlerMap, broadcaster);
-        this.messageDistributor = new UserMessageDistributor(userMap, userSocketHandlerMap, messageQueue, broadcaster, executor);
+        this.room = new ChatRoom(messageQueue);
     }
 
     @Test
-    public void shouldContainMessageInQueueWhenReadFromStreamAndEnqueued() throws Exception {
+    public void shouldContainMessageInQueueWhenSimpleMessageReadFromStreamAndEnqueued() throws Exception {
         Socket socket = mock(Socket.class);
-        when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(("hi everyone").getBytes()));
+        when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(("ayaz\nhi everyone").getBytes()));
         when(socket.getOutputStream()).thenReturn(new ByteArrayOutputStream());
-        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, messageDistributor);
-        userSocketHandler.setNickname("ayaz");
-        messageDistributor.registerAtMessageDistributor(new User("ayaz"), userSocketHandler);
+        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, room);
+        room.registerAtChatRoom(new User("ayaz"), userSocketHandler);
 
         userSocketHandler.run();
 
-        assertTrue(messageDistributor.queueContainsMessage(new UserMessage("ayaz", "hi everyone")));
+        assertTrue(room.queueContainsMessage(new UserMessage("ayaz", "hi everyone")));
+    }
+
+    @Test
+    public void shouldWriteInvalidCommandWhenCommandReadFromStream() throws Exception {
+        Socket socket = mock(Socket.class);
+        when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(("ayaz\n#ignore ayaz").getBytes()));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(100);
+        when(socket.getOutputStream()).thenReturn(outputStream);
+        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, room);
+        room.registerAtChatRoom(userSocketHandler.getUser(), userSocketHandler);
+
+        userSocketHandler.run();
+
+        assertTrue(outputStream.toString().contains("Invalid command"));
     }
 }
