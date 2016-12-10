@@ -6,12 +6,9 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.Socket;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class UserSocketHandlerTest {
 
@@ -19,34 +16,86 @@ public class UserSocketHandlerTest {
 
     @Before
     public final void before() {
-        BlockingQueue<UserMessage> messageQueue = new ArrayBlockingQueue(500, true);
-        this.room = new ChatRoom(messageQueue);
+        this.room = mock(ChatRoom.class);
     }
 
     @Test
     public void shouldContainMessageInQueueWhenSimpleMessageReadFromStreamAndEnqueued() throws Exception {
         Socket socket = mock(Socket.class);
         when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(("ayaz\nhi everyone").getBytes()));
-        when(socket.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+        when(socket.getOutputStream()).thenReturn(mock(ByteArrayOutputStream.class));
         UserSocketHandler userSocketHandler = new UserSocketHandler(socket, room);
-        room.registerAtChatRoom(new User("ayaz"), userSocketHandler);
 
         userSocketHandler.run();
 
-        assertTrue(room.queueContainsMessage(new UserMessage("ayaz", "hi everyone")));
+        verify(room).enqueueMessage(new UserMessage("ayaz", "hi everyone"));
     }
 
+
     @Test
-    public void shouldWriteInvalidCommandWhenCommandReadFromStream() throws Exception {
+    public void shouldWriteInvalidCommandWhenMalformedCommandReadFromStream() throws Exception {
         Socket socket = mock(Socket.class);
         when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(("ayaz\n#ignore ayaz").getBytes()));
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(100);
         when(socket.getOutputStream()).thenReturn(outputStream);
         UserSocketHandler userSocketHandler = new UserSocketHandler(socket, room);
-        room.registerAtChatRoom(userSocketHandler.getUser(), userSocketHandler);
 
         userSocketHandler.run();
 
         assertTrue(outputStream.toString().contains("Invalid command"));
+    }
+
+    @Test
+    public void shouldCloseStreamsWhenQuitCommandReadFromStream() throws Exception {
+        Socket socket = mock(Socket.class);
+        ByteArrayInputStream inputStream = spy(new ByteArrayInputStream(("ayaz\n#quit").getBytes()));
+        when(socket.getInputStream()).thenReturn(inputStream);
+        ByteArrayOutputStream outputStream = mock(ByteArrayOutputStream.class);
+        when(socket.getOutputStream()).thenReturn(outputStream);
+        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, room);
+
+        userSocketHandler.run();
+
+        verify(inputStream).close();
+        verify(outputStream).close();
+    }
+
+    @Test
+    public void shouldSendSuccessfulIgnoreWhenIgnoreCommandReadFromStream() throws Exception {
+        Socket socket = mock(Socket.class);
+        when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(("ayaz\n#ignore spammer").getBytes()));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(100);
+        when(socket.getOutputStream()).thenReturn(outputStream);
+        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, room);
+
+        userSocketHandler.run();
+
+        assertTrue(outputStream.toString().contains("User successfully ignored"));
+    }
+
+    @Test
+    public void shouldSendSuccessfulIgnoreWhenIgnoreCommandWithSeveralArgumentsReadFromStream() throws Exception {
+        Socket socket = mock(Socket.class);
+        when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(("ayaz\n#ignore spammer badGuy").getBytes()));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(100);
+        when(socket.getOutputStream()).thenReturn(outputStream);
+        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, room);
+
+        userSocketHandler.run();
+
+        assertTrue(outputStream.toString().contains("User successfully ignored"));
+    }
+
+    @Test
+    public void shouldSendUnknownCommandWhenUnknownCommandReadFromStream() throws Exception {
+        Socket socket = mock(Socket.class);
+        when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(("ayaz\n#setFontSize").getBytes()));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(100);
+        when(socket.getOutputStream()).thenReturn(outputStream);
+        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, room);
+
+        userSocketHandler.run();
+
+        assertTrue(outputStream.toString().contains("Unknown command"));
     }
 }

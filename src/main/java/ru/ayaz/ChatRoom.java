@@ -24,15 +24,12 @@ public class ChatRoom implements Runnable {
         }
     }
 
-    boolean queueContainsMessage(UserMessage message) {
-        return messageQueue.contains(message);
-    }
-
     UserMessage takeMessage() throws InterruptedException {
         return messageQueue.take();
     }
 
-    void registerAtChatRoom(User user, UserSocketHandler userSocketHandler) {
+    void registerSocketHandler(UserSocketHandler userSocketHandler) {
+        User user = userSocketHandler.getUser();
         userMap.put(user.getNickname(), user);
         userSocketHandlerMap.put(user.getNickname(), userSocketHandler);
     }
