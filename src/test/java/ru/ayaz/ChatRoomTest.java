@@ -13,10 +13,11 @@ import static org.mockito.Mockito.*;
 public class ChatRoomTest {
 
     private ChatRoom room;
+    private BlockingQueue<UserMessage> messageQueue;
 
     @Before
     public final void before() {
-        BlockingQueue<UserMessage> messageQueue = new ArrayBlockingQueue(500, true);
+        this.messageQueue = new ArrayBlockingQueue(500, true);
         this.room = spy(new ChatRoom(messageQueue));
     }
 
@@ -26,7 +27,7 @@ public class ChatRoomTest {
 
         room.enqueueMessage(someMessage);
 
-        assertTrue(room.queueContainsMessage(someMessage));
+        assertTrue(messageQueue.contains(someMessage));
     }
 
 
@@ -44,7 +45,9 @@ public class ChatRoomTest {
     public void shouldBeInChatRoomWhenUserHasBeenRegisteredBefore() {
         User user = mock(User.class);
         when(user.getNickname()).thenReturn("Ayaz");
-        room.registerAtChatRoom(user, mock(UserSocketHandler.class));
+        UserSocketHandler userSocketHandler = mock(UserSocketHandler.class);
+        when(userSocketHandler.getUser()).thenReturn(user);
+        room.registerSocketHandler(userSocketHandler);
 
         assertTrue(room.isUserInChatRoom("Ayaz"));
     }
@@ -54,7 +57,8 @@ public class ChatRoomTest {
         User receiverUser = mock(User.class);
         when(receiverUser.getNickname()).thenReturn("Alexandr");
         UserSocketHandler receiverSocketHandler = mock(UserSocketHandler.class);
-        room.registerAtChatRoom(receiverUser, receiverSocketHandler);
+        when(receiverSocketHandler.getUser()).thenReturn(receiverUser);
+        room.registerSocketHandler(receiverSocketHandler);
         UserMessage message = new UserMessage("Ayaz", "Hello, Alexandr!");
         doReturn(message).doThrow(InterruptedException.class).when(room).takeMessage();
 
@@ -66,15 +70,18 @@ public class ChatRoomTest {
     @Test
     public void shouldNotSendToYourselfWhenYoursMessageTaken() throws Exception {
         User senderUser = mock(User.class);
-        when(senderUser.getNickname()).thenReturn("Ayaz");
-        when(senderUser.isItMe("Ayaz")).thenReturn(true);
+        String senderNickname = "Ayaz";
+        String senderMessage = "Is anyone here?";
+        when(senderUser.getNickname()).thenReturn(senderNickname);
+        when(senderUser.isItMe(senderNickname)).thenReturn(true);
         UserSocketHandler senderSocketHandler = mock(UserSocketHandler.class);
-        room.registerAtChatRoom(senderUser, senderSocketHandler);
-        UserMessage message = new UserMessage("Ayaz", "Is anyone here?");
+        when(senderSocketHandler.getUser()).thenReturn(senderUser);
+        room.registerSocketHandler(senderSocketHandler);
+        UserMessage message = new UserMessage(senderNickname, senderMessage);
         doReturn(message).doThrow(InterruptedException.class).when(room).takeMessage();
 
         room.run();
 
-        verify(senderSocketHandler, never()).sendMessage(new UserMessage("Ayaz", "Ayaz: Is anyone here?"));
+        verify(senderSocketHandler, never()).sendMessage(new UserMessage(senderNickname, senderNickname + ": " + senderMessage));
     }
 }

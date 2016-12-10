@@ -17,6 +17,7 @@ public class Chat {
     Chat() {
         try {
             this.serverSocket = new ServerSocket(4400);
+            startServingVisitors();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -24,12 +25,11 @@ public class Chat {
 
 
     void start() {
-        startUserMessageDistributor();
         try {
             while (true) {
                 Socket socket = serverSocket.accept();
                 UserSocketHandler userSocketHandler = new UserSocketHandler(socket, room);
-                room.registerAtChatRoom(userSocketHandler.getUser(), userSocketHandler);
+                room.registerSocketHandler(userSocketHandler);
                 new Thread(userSocketHandler).start();
             }
         } catch (IOException e) {
@@ -40,7 +40,7 @@ public class Chat {
     }
 
 
-    private void startUserMessageDistributor() {
+    private void startServingVisitors() {
         BlockingQueue<UserMessage> messageQueue = new ArrayBlockingQueue(500, true);
         this.room = new ChatRoom(messageQueue);
         new Thread(room).start();

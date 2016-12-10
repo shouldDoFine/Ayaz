@@ -1,6 +1,7 @@
 package ru.ayaz;
 
 import ru.ayaz.ru.ayaz.exceptions.InvalidNicknameException;
+import ru.ayaz.ru.ayaz.exceptions.InvalidUserCommandException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,14 +16,12 @@ public class UserSocketHandler implements Runnable {
     private PrintWriter writer;
     private BufferedReader reader;
     private User user;
-    private CommandExecutor executor;
 
     UserSocketHandler(Socket socket, ChatRoom messageDistributor) throws IOException, InvalidNicknameException {
         this.writer = new PrintWriter(socket.getOutputStream());
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.room = messageDistributor;
         this.user = registerUser();
-        this.executor = new CommandExecutor(user, this);
     }
 
     public User getUser() {
@@ -36,7 +35,7 @@ public class UserSocketHandler implements Runnable {
             while ((message = listenForMessage()) != null) {
                 UserMessage userMessage = new UserMessage(user.getNickname(), message);
                 if (isCommand(userMessage.getText())) {
-                    executor.executeCommand(userMessage);
+                    executeCommand(userMessage);
                 } else {
                     room.enqueueMessage(userMessage);
                 }
@@ -51,25 +50,80 @@ public class UserSocketHandler implements Runnable {
         writer.flush();
     }
 
-    void closeStreams() throws IOException {
+    private void executeCommand(UserMessage commandMessage) {
+        String nickname = commandMessage.getSenderName();
+        String text = commandMessage.getText();
+
+        switch (getCommand(text)) {
+            case "#quit":
+                executeQuitCommand();
+                break;
+            case "#ignore":
+                executeIgnoreCommand(commandMessage);
+                break;
+            default:
+                UserMessage message = new UserMessage(nickname, "Unknown command");
+                sendMessage(message);
+                break;
+        }
+    }
+
+    private void executeQuitCommand() {
+        try {
+            closeStreams();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void closeStreams() throws IOException {
         writer.close();
         reader.close();
     }
 
-    private void askNickname() {
-        sendMessage(new UserMessage("SYSTEM", "Enter your nickname: \n"));
+    private void executeIgnoreCommand(UserMessage commandMessage) {
+        String nickname = commandMessage.getSenderName();
+        String text = commandMessage.getText();
+
+        try {
+            user.ignoreUser(getFirstArgument(text));
+            UserMessage message = new UserMessage(nickname, "User successfully ignored");
+            sendMessage(message);
+        } catch (InvalidUserCommandException e) {
+            UserMessage message = new UserMessage(nickname, "Invalid command");
+            sendMessage(message);
+        }
     }
+
 
     private User registerUser() throws IOException, InvalidNicknameException {
         askNickname();
         return new User(listenForMessage());
     }
 
+    private void askNickname() {
+        sendMessage(new UserMessage("SYSTEM", "Enter your nickname: \n"));
+    }
+
     private String listenForMessage() throws IOException {
         return reader.readLine();
     }
 
-    static boolean isCommand(String message) {
+    static String getCommand(String message) {
+        String trimmedMessage = message.trim();
+        if (trimmedMessage.contains(" ")) {
+            return trimmedMessage.substring(0, trimmedMessage.indexOf(" "));
+        } else {
+            return trimmedMessage;
+        }
+    }
+
+    private String getFirstArgument(String message) {
+        String[] arguments = message.trim().split("\\s+");
+        return arguments[1];
+    }
+
+    private boolean isCommand(String message) {
         return message.trim().startsWith("#");
     }
 }
