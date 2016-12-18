@@ -6,23 +6,21 @@ import ru.ayaz.ru.ayaz.exceptions.InvalidNicknameException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 public class Chat {
 
     private ServerSocket serverSocket;
     private ChatRoom room;
 
+
     Chat() {
         try {
             this.serverSocket = new ServerSocket(4400);
-            startServingVisitors();
+            createRoom();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 
     void start() {
         try {
@@ -39,10 +37,9 @@ public class Chat {
         }
     }
 
-
-    private void startServingVisitors() {
-        BlockingQueue<UserMessage> messageQueue = new ArrayBlockingQueue(500, true);
-        this.room = new ChatRoom(messageQueue);
-        new Thread(room).start();
+    private void createRoom() {
+        this.room = new ChatRoom();
+        ChatRoomThread roomThread = new ChatRoomThread(room);
+        new Thread(roomThread).start();
     }
 }

@@ -2,54 +2,24 @@ package ru.ayaz;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public class ChatRoom implements Runnable {
+public class ChatRoom {
 
     private Map<String, User> userMap;
     private Map<String, UserSocketHandler> userSocketHandlerMap;
     private BlockingQueue<UserMessage> messageQueue;
 
-    ChatRoom(BlockingQueue<UserMessage> queue) {
+    ChatRoom() {
         this.userMap = new HashMap<>();
         this.userSocketHandlerMap = new HashMap<>();
-        this.messageQueue = queue;
+        this.messageQueue = new ArrayBlockingQueue(500, true);
     }
 
-    void enqueueMessage(UserMessage message) {
-        try {
-            messageQueue.put(message);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
+    public void sendNextMessageToEveryone() throws InterruptedException {
+        UserMessage textMessage = takeMessage();
 
-    UserMessage takeMessage() throws InterruptedException {
-        return messageQueue.take();
-    }
-
-    void registerSocketHandler(UserSocketHandler userSocketHandler) {
-        User user = userSocketHandler.getUser();
-        userMap.put(user.getNickname(), user);
-        userSocketHandlerMap.put(user.getNickname(), userSocketHandler);
-    }
-
-    boolean isUserInChatRoom(String nickname) {
-        return userMap.containsKey(nickname);
-    }
-
-    @Override
-    public void run() {
-        try {
-            while (true) {
-                sendMessageToEveryone(takeMessage());
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void sendMessageToEveryone(UserMessage textMessage) {
         String senderNickname = textMessage.getSenderName();
         String text = textMessage.getText();
 
@@ -64,6 +34,30 @@ public class ChatRoom implements Runnable {
             UserMessage message = new UserMessage(senderNickname, senderNickname + ": " + text);
             sendMessageToOnlyOne(message, receiverNickname);
         }
+    }
+
+
+    void enqueueMessage(UserMessage message) {
+        try {
+            messageQueue.put(message);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    void registerSocketHandler(UserSocketHandler userSocketHandler) {
+        User user = userSocketHandler.getUser();
+        userMap.put(user.getNickname(), user);
+        userSocketHandlerMap.put(user.getNickname(), userSocketHandler);
+    }
+
+    boolean isUserInChatRoom(String nickname) {
+        return userMap.containsKey(nickname);
+    }
+
+    private UserMessage takeMessage() throws InterruptedException {
+        return messageQueue.take();
     }
 
     private void sendMessageToOnlyOne(UserMessage message, String receiverNickname) {

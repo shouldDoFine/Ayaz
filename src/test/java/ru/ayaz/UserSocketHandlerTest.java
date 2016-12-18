@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.Socket;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -30,7 +31,6 @@ public class UserSocketHandlerTest {
 
         verify(room).enqueueMessage(new UserMessage("ayaz", "hi everyone"));
     }
-
 
     @Test
     public void shouldWriteInvalidCommandWhenMalformedCommandReadFromStream() throws Exception {
@@ -97,5 +97,18 @@ public class UserSocketHandlerTest {
         userSocketHandler.run();
 
         assertTrue(outputStream.toString().contains("Unknown command"));
+    }
+
+    @Test
+    public void shouldGetUserWhenNicknameReadFromStream() throws Exception {
+        Socket socket = mock(Socket.class);
+        when(socket.getInputStream()).thenReturn(new ByteArrayInputStream(("ayaz\n").getBytes()));
+        when(socket.getOutputStream()).thenReturn(mock(ByteArrayOutputStream.class));
+        UserSocketHandler userSocketHandler = new UserSocketHandler(socket, room);
+        User expectedUser = new User("ayaz");
+
+        userSocketHandler.run();
+
+        assertEquals(expectedUser.getNickname(), userSocketHandler.getUser().getNickname());
     }
 }

@@ -17,14 +17,14 @@ public class UserSocketHandler implements Runnable {
     private BufferedReader reader;
     private User user;
 
-    UserSocketHandler(Socket socket, ChatRoom messageDistributor) throws IOException, InvalidNicknameException {
+    UserSocketHandler(Socket socket, ChatRoom room) throws IOException, InvalidNicknameException {
         this.writer = new PrintWriter(socket.getOutputStream());
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.room = messageDistributor;
+        this.room = room;
         this.user = registerUser();
     }
 
-    public User getUser() {
+    User getUser() {
         return user;
     }
 
@@ -109,7 +109,7 @@ public class UserSocketHandler implements Runnable {
         return reader.readLine();
     }
 
-    static String getCommand(String message) {
+    private String getCommand(String message) {
         String trimmedMessage = message.trim();
         if (trimmedMessage.contains(" ")) {
             return trimmedMessage.substring(0, trimmedMessage.indexOf(" "));
