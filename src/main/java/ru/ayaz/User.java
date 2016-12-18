@@ -18,29 +18,6 @@ public class User {
         this.ignoredUsers = new HashSet<>();
     }
 
-    private void validateNickName(String nickname) throws InvalidNicknameException {
-        if (nickname == null) {
-            throw new InvalidNicknameException(nickname);
-        }
-
-        if (isSpacesOnly(nickname)) {
-            throw new InvalidNicknameException(nickname);
-        }
-
-        if (isFirstCharDigit(nickname)) {
-            throw new InvalidNicknameException(nickname);
-        }
-    }
-
-    private boolean isFirstCharDigit(String nickname) {
-        return Character.isDigit(nickname.charAt(0));
-    }
-
-    private boolean isSpacesOnly(String nickname) {
-        return nickname.replaceAll("\\s+", "").equals("");
-    }
-
-
     String getNickname() {
         return nickname;
     }
@@ -61,5 +38,27 @@ public class User {
 
     boolean isItMe(String blackNickName) {
         return nickname.equals(blackNickName);
+    }
+
+    private void validateNickName(String nickname) throws InvalidNicknameException {
+        if (nickname == null) {
+            throw new InvalidNicknameException(nickname);
+        }
+
+        if (isSpacesOnly(nickname)) {
+            throw new InvalidNicknameException(nickname);
+        }
+
+        if (isFirstCharDigit(nickname)) {
+            throw new InvalidNicknameException(nickname);
+        }
+    }
+
+    private boolean isFirstCharDigit(String nickname) {
+        return Character.isDigit(nickname.charAt(0));
+    }
+
+    private boolean isSpacesOnly(String nickname) {
+        return nickname.replaceAll("\\s+", "").equals("");
     }
 }
